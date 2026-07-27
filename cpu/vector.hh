@@ -16,13 +16,24 @@ struct Vector {
 
 double dot(const Vector&, const Vector&);
 
+
 // Operator overloading
 inline Vector operator+(const Vector& v1, const Vector& v2) {
     return Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
 
+inline Vector& operator+=(Vector& v1, const Vector& v2) {
+    v1.x += v2.x; v1.y += v2.y; v1.z += v2.z;
+    return v1;
+}
+
 inline Vector operator-(const Vector& v1, const Vector& v2) {
     return Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+}
+
+inline Vector& operator-=(Vector& v1, const Vector& v2) {
+    v1.x -= v2.x; v1.y -= v2.y; v1.z -= v2.z;
+    return v1;
 }
 
 inline Vector operator-(const Vector& v) {
@@ -35,6 +46,11 @@ inline Vector operator*(double s, const Vector& v) {
 
 inline Vector operator*(const Vector& v, double s) {
     return Vector(s * v.x, s * v.y, s * v.z);
+}
+
+inline Vector& operator*=(Vector& v, double s) {
+    v.x *= s; v.y *= s; v.z *= s;
+    return v;
 }
 
 #endif // VECTOR_H_
