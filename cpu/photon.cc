@@ -1,11 +1,12 @@
 #include "photon.hh"
 
 const double C = 299.8;  // mm/ns
+const double C_INV = 1.0 / C;  // ns/mm
 
 // Propagate photon by distance `d` [mm]
 void Photon::propagate(double d) {
     r += d * p;
-    t += d / C;
+    t += d * C_INV;
 }
 
 // Track a single photon, from creation to absorption
