@@ -3,6 +3,8 @@
 
 #include <random>
 
+#include "vector.hh"
+
 struct Parameters {
     double ls;  // scattering length
     double la;  // absorption length
@@ -14,5 +16,6 @@ struct Parameters {
 };
 
 double sample_length(double, std::mt19937&);
+Vector sample_direction(std::mt19937&);
 
 #endif // PARAMETERS_H_
