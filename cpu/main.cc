@@ -8,8 +8,9 @@
 
 int main() {
     // Simulation parameters
-    int nb_events = 1;
-    int nb_photons = 10000000;
+    const int nb_events = 1;
+    const int nb_photons = 1000;
+    const int max_steps = 10000;
     
     Vector origin(0.0, 0.0, 0.0);
     Parameters parameters(1.0, 9.0);
@@ -21,8 +22,7 @@ int main() {
     for (int e=0; e<nb_events; e++) {
         for (int n=0; n<nb_photons; n++) {
             Photon photon(origin, 0.0);
-            photon.track(parameters, rng, 1000);
-            // std::cout << "Photon final position: (" << photon.r.x << ", " << photon.r.y << ", " << photon.r.z << ")" << std::endl;
+            photon.track(parameters, rng, max_steps);
         }
     }
 
