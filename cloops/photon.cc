@@ -1,5 +1,7 @@
 #include "photon.hh"
 
+#include "parameters.hh"
+
 const double C = 299.8;  // mm/ns
 const double C_INV = 1.0 / C;  // ns/mm
 
@@ -10,17 +12,18 @@ void Photon::propagate(double d, double n) {
 }
 
 // Track a single photon, from creation to absorption
-void Photon::track(Parameters& parameters, double refractive_index, std::mt19937& rng, int max_steps) {
+void Photon::track(Parameters& parameters, std::mt19937& rng, int max_steps) {
     // Set random direction
     p = sample_direction(rng);
     
     // Sample absorption length
-    abs_dist = parameters.sample_absorption_length(rng);
+    abs_dist = parameters.sample_absorption_length(l, rng);
+    double refractive_index = parameters.lookup_refractive_index(l);
 
     // Loop until max_steps reached
     for (int i=0; i<max_steps; i++) {
         // Sample scattering length for this step
-        double scattering_length = parameters.sample_scattering_length(rng);
+        double scattering_length = parameters.sample_scattering_length(l, rng);
 
         if (abs_dist < scattering_length) {  // if absorption happens first, break out of the loop
             propagate(abs_dist, refractive_index);
