@@ -28,14 +28,17 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
     // Set random direction
     photon.p = sample_direction(rng);
     
-    // Sample absorption length
+    // Sample absorption length 
     double abs_dist = sample_length(params.absorption_length.at(photon.wl), rng);
+    // Lookup refractive index at this wavelength
     double refractive_index = params.refractive_index.at(photon.wl);
+    // Lookup mean scattering length at this wavelength
+    double mean_scattering_length = params.scattering_length.at(photon.wl);
 
     // Loop until max_steps reached
     for (int i=0; i<max_steps; i++) {
         // Sample scattering length for this step
-        double scattering_length = sample_length(params.scattering_length.at(photon.wl), rng);
+        double scattering_length = sample_length(mean_scattering_length, rng);
 
         if (abs_dist < scattering_length) {  // if absorption happens first, break out of the loop
             propagate_photon(photon, abs_dist, refractive_index);
