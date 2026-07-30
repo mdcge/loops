@@ -13,9 +13,6 @@ struct Photon {
     Vector p;  // direction (normalised)
     double t;  // time [ns]
     double wl;  // wavelength [nm]
-    
-    void propagate(double, double);    
-    void track(Parameters&, std::mt19937&, int);
 };
 
 #endif // PHOTON_H_
