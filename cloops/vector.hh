@@ -8,6 +8,7 @@ struct Vector {
     double y;
     double z;
 
+    Vector() : x(0.0), y(0.0), z(0.0) {}
     Vector(double x, double y, double z) : x(x), y(y), z(z) {}
 
     double mag() const;
