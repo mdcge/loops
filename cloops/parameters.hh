@@ -12,6 +12,9 @@ struct OpticalProperty {
     std::vector<double> values;  // values at reference wavelengths
 
     OpticalProperty(std::vector<double> wavelengths, std::vector<double> values) : wavelengths(wavelengths), values(values) {}
+
+    // Return value of `values` at `wavelength`
+    double at(double) const;
 };
 
 struct Parameters {
@@ -44,7 +47,6 @@ struct Parameters {
     double lookup_refractive_index(double);
 };
 
-double lookup_value(const OpticalProperty&, double);
 double sample_length(double, std::mt19937&);
 Vector sample_direction(std::mt19937&);
 

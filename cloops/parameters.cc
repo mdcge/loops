@@ -2,19 +2,42 @@
 
 #include <cmath>
 
+// === OpticalProperty ===
+
+double OpticalProperty::at(double wavelength) const {
+    // Pointer to first wavelength >= value being searched
+    std::vector<double>::const_iterator it = std::lower_bound(wavelengths.begin(), wavelengths.end(), wavelength);
+
+    if (it == wavelengths.begin()) return values.front();  // if wavelength < min(wavelengths), return `values[0]`
+    if (it == wavelengths.end())   return values.back();  // if wavelength > max(wavelengths), return `values[-1]`
+
+    // If exact match, just return corresponding value
+    size_t i = std::distance(wavelengths.begin(), it);
+    if (wavelengths[i] == wavelength) return values[i];
+
+    // Otherwise, interpolate
+    double x0 = wavelengths[i-1], x1 = wavelengths[i];
+    double y0 = values[i-1],     y1 = values[i];
+    return y0 + (wavelength - x0) * (y1 - y0) / (x1 - x0);
+}
+
+// === Parameters ===
+
 double Parameters::sample_scattering_length(double wavelength, std::mt19937& rng)  {
-    double scat_len = lookup_value(scattering_length, wavelength);
+    double scat_len = scattering_length.at(wavelength);
     return sample_length(scat_len, rng);
 }
 
 double Parameters::sample_absorption_length(double wavelength, std::mt19937& rng)  {
-    double abs_len = lookup_value(absorption_length, wavelength);
+    double abs_len = absorption_length.at(wavelength);
     return sample_length(abs_len, rng);
 }
 
 double Parameters::lookup_refractive_index(double wavelength) {
-    return lookup_value(refractive_index, wavelength);
+    return refractive_index.at(wavelength);
 }
+
+// === General ===
 
 double sample_length(double lambda, std::mt19937& rng)  {
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
@@ -35,36 +58,4 @@ Vector sample_direction(std::mt19937& rng) {
         sin_theta * std::sin(phi),
         cos_theta
     );
-}
-
-// Extract value from property (xs and ys), given input x
-// Interpolate if needed
-// If x not in [min(xs), max(xs)], just take the boundary value of ys
-double lookup_value(const OpticalProperty& property, double x) {
-    const std::vector<double>& xs = property.wavelengths;
-    const std::vector<double>& ys = property.values;
-    
-    // Pointer to first element >= value being searched
-    std::vector<double>::const_iterator it = std::lower_bound(xs.begin(), xs.end(), x);
-
-    // If x < min(xs), return ys[min(xs)]
-    if (it == xs.begin())
-        return ys.front();
-
-    // If x > max(xs), return ys[max(xs)]
-    if (it == xs.end())
-        return ys.back();
-
-    // Index of desired value
-    size_t i = std::distance(xs.begin(), it);
-
-    // If match is exact, just return corresponding y
-    if (xs[i] == x)
-        return ys[i];
-
-    // Otherwise, interpolate
-    double x0 = xs[i - 1], x1 = xs[i];
-    double y0 = ys[i - 1], y1 = ys[i];
-
-    return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 }
