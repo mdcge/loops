@@ -13,8 +13,7 @@ struct Photon {
     Vector p;  // direction (normalised)
     double t;  // time [ns]
     double wl;  // wavelength [nm]
-    double abs_dist;  // distance to absorption [mm]
-
+    
     void propagate(double, double);    
     void track(Parameters&, std::mt19937&, int);
 };
