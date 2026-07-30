@@ -15,7 +15,7 @@ struct Simulation {
     Simulation(
         Parameters parameters,
         unsigned seed
-    ) : params(parameters),
+    ) : params(std::move(parameters)),
         rng(seed),
         emission_spectrum_distribution(params.emission_spectrum.values.begin(), params.emission_spectrum.values.end()),
         scintillation_component_distribution(params.scint_time_amps.begin(), params.scint_time_amps.end())
