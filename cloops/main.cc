@@ -26,7 +26,11 @@ int main() {
     const int max_steps = 100000;
     
     Vector origin(0.0, 0.0, 0.0);
-    Parameters parameters(WAVELENGTHS_250, EMISSION_SPECTRUM, WAVELENGTHS_350, SCATTERING_LENGTHS, WAVELENGTHS_250, ABSORPTION_LENGTHS, WAVELENGTHS_250, REFRACTIVE_INDICES, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
+    OpticalProperty emission_spectrum = OpticalProperty(WAVELENGTHS_250, EMISSION_SPECTRUM);
+    OpticalProperty scattering_length = OpticalProperty(WAVELENGTHS_350, SCATTERING_LENGTHS);
+    OpticalProperty absorption_length = OpticalProperty(WAVELENGTHS_250, ABSORPTION_LENGTHS);
+    OpticalProperty refractive_index = OpticalProperty(WAVELENGTHS_250, REFRACTIVE_INDICES);
+    Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
     std::mt19937 rng(42);
 
     // Start timer

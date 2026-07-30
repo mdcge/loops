@@ -17,10 +17,6 @@ struct Photon {
 
     Photon(Vector r, Vector p, double t, double l) : r(r), p(p), t(t), l(l), abs_dist(std::numeric_limits<double>::infinity()) {}
     Photon(Vector r, double t, double l) : r(r), p(Vector(0.0, 0.0, 0.0)), t(t), l(l), abs_dist(std::numeric_limits<double>::infinity()) {}
-    Photon(Vector r, double t, Parameters& parameters, std::mt19937& rng) : r(r), p(Vector(0.0, 0.0, 0.0)), t(t), abs_dist(std::numeric_limits<double>::infinity()) {
-        std::discrete_distribution<> dist(parameters.emission_prob.begin(), parameters.emission_prob.end());
-        l = parameters.emission_wls[dist(rng)];
-    }
     Photon(Vector r, Parameters& parameters, std::mt19937& rng) : r(r), p(Vector(0.0, 0.0, 0.0)), abs_dist(std::numeric_limits<double>::infinity()) {
         std::discrete_distribution<int> component(parameters.scint_time_amps.begin(), parameters.scint_time_amps.end());
         int i = component(rng);
@@ -30,8 +26,8 @@ struct Photon {
         
         t = rise(rng) + decay(rng);
 
-        std::discrete_distribution<> dist(parameters.emission_prob.begin(), parameters.emission_prob.end());
-        l = parameters.emission_wls[dist(rng)];
+        std::discrete_distribution<> dist(parameters.emission_spectrum.values.begin(), parameters.emission_spectrum.values.end());
+        l = parameters.emission_spectrum.wavelengths[dist(rng)];
     }
 
     void propagate(double, double);

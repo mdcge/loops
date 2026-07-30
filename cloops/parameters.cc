@@ -3,17 +3,17 @@
 #include <cmath>
 
 double Parameters::sample_scattering_length(double wavelength, std::mt19937& rng)  {
-    double scat_len = lookup_value(ls_wls, ls, wavelength);
+    double scat_len = lookup_value(scattering_length, wavelength);
     return sample_length(scat_len, rng);
 }
 
 double Parameters::sample_absorption_length(double wavelength, std::mt19937& rng)  {
-    double abs_len = lookup_value(la_wls, la, wavelength);
+    double abs_len = lookup_value(absorption_length, wavelength);
     return sample_length(abs_len, rng);
 }
 
 double Parameters::lookup_refractive_index(double wavelength) {
-    return lookup_value(n_wls, n, wavelength);
+    return lookup_value(refractive_index, wavelength);
 }
 
 double sample_length(double lambda, std::mt19937& rng)  {
@@ -37,10 +37,13 @@ Vector sample_direction(std::mt19937& rng) {
     );
 }
 
-// Extract value from ys corresponding to xs, given input x
+// Extract value from property (xs and ys), given input x
 // Interpolate if needed
 // If x not in [min(xs), max(xs)], just take the boundary value of ys
-double lookup_value(const std::vector<double>& xs, const std::vector<double>& ys, double x) {
+double lookup_value(const OpticalProperty& property, double x) {
+    const std::vector<double>& xs = property.wavelengths;
+    const std::vector<double>& ys = property.values;
+    
     // Pointer to first element >= value being searched
     std::vector<double>::const_iterator it = std::lower_bound(xs.begin(), xs.end(), x);
 
