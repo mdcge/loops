@@ -40,7 +40,7 @@ int main() {
         for (int n=0; n<nb_photons; n++) {
             Photon photon(origin, parameters, rng);
             photon.track(parameters, rng, max_steps);
-
+            
             // file << photon.r.x << "," << photon.r.y << "," << photon.r.z << "," << photon.t << "\n";
         }
     }

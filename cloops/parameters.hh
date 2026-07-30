@@ -41,10 +41,6 @@ struct Parameters {
         scint_rise_time(scintillation_rise_time),
         scint_time_cnsts(scintillation_time_constants),
         scint_time_amps(scintillation_time_amplitudes) {}
-
-    double sample_scattering_length(double, std::mt19937&);
-    double sample_absorption_length(double, std::mt19937&);
-    double lookup_refractive_index(double);
 };
 
 double sample_length(double, std::mt19937&);

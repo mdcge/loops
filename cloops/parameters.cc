@@ -21,22 +21,6 @@ double OpticalProperty::at(double wavelength) const {
     return y0 + (wavelength - x0) * (y1 - y0) / (x1 - x0);
 }
 
-// === Parameters ===
-
-double Parameters::sample_scattering_length(double wavelength, std::mt19937& rng)  {
-    double scat_len = scattering_length.at(wavelength);
-    return sample_length(scat_len, rng);
-}
-
-double Parameters::sample_absorption_length(double wavelength, std::mt19937& rng)  {
-    double abs_len = absorption_length.at(wavelength);
-    return sample_length(abs_len, rng);
-}
-
-double Parameters::lookup_refractive_index(double wavelength) {
-    return refractive_index.at(wavelength);
-}
-
 // === General ===
 
 double sample_length(double lambda, std::mt19937& rng)  {
