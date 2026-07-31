@@ -25,9 +25,6 @@ void Simulation::propagate_photon(Photon& photon, double d, double n) {
 
 // Track a single photon, from creation to absorption
 void Simulation::track_photon(Photon& photon, int max_steps) {
-    // Set random direction
-    photon.p = sample_direction(rng);
-    
     // Sample absorption length 
     double abs_dist = sample_length(params.absorption_length.at(photon.wl), rng);
     // Lookup refractive index at this wavelength
