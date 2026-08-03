@@ -8,7 +8,6 @@
 // Calculate distance from point `x` to cylinder along direction `d`
 double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
     Vector point = x - O;  // "local" point accounting for detector origin
-    double t_min = std::numeric_limits<double>::infinity();
 
     // Side wall: solve 2D case
     //     |point.xy + t * d.xy|^2 = r^2
@@ -17,31 +16,26 @@ double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
     // =>     a   * t^2  +            b         * t  +            c       =  0
     // =>  t = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
     // for t
+    double t_side = std::numeric_limits<double>::infinity();
     double a = 1.0 - d.z*d.z;  // = d.x*d.x + d.y*d.y because d is unit
     if (a > 0.0) { // if a == 0, it's a purely axial photon: skip side wall check
         double b = 2.0 * (point.x*d.x + point.y*d.y);
         double c = point.x*point.x + point.y*point.y - r*r;
         double discriminator = b*b - 4*a*c;
         if (discriminator >= 0.0) { // if discriminator gives valid solutions
-            double t = (-b + std::sqrt(discriminator)) / (2*a);
-            if (t > 0.0 && std::abs(point.z + t*d.z) <= z) { // does ray intersect wall within height of cylinder
-                t_min = std::min(t_min, t);
-            }
+            double t_side = (-b + std::sqrt(discriminator)) / (2*a);
         }
     }
 
     // Caps: solve
     // point.z + t * d.z = +-z
+    double t_cap = std::numeric_limits<double>::infinity();
     if (d.z != 0.0) { // if d.z == 0, it's a purely radial photon: skip cap check
         double cap_z = std::copysign(z, d.z);  // +z if d -> +z ,  -z if d -> -z
-        double t = (cap_z - point.z) / d.z;  // distance to cap
-        double rx = point.x + t*d.x; double ry = point.y + t*d.y;
-        if (rx*rx + ry*ry <= r*r) { // does ray intersect cap within radius of cylinder
-            t_min = std::min(t_min, t);
-        }
+        double t_cap = (cap_z - point.z) / d.z;  // distance to cap
     }
 
-    return t_min;
+    return std::min(t_side, t_cap);
 }
 
 // Calculate distance from point `x` to cuboid along direction `d`
