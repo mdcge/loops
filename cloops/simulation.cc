@@ -35,15 +35,20 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
     // Loop until max_steps reached
     for (int i=0; i<max_steps; i++) {
         // Sample scattering length for this step
-        double scattering_length = sample_length(mean_scattering_length, rng);
+        double scattering_distance = sample_length(mean_scattering_length, rng);
+        // Calculate minimum distance to detector walls
+        double intersection_distance = detector.intersection_distance(photon.r, photon.p);
 
-        if (abs_dist < scattering_length) {  // if absorption happens first, break out of the loop
+        if (abs_dist < scattering_distance && abs_dist < intersection_distance) {  // if absorption happens first, break out of the loop
             propagate_photon(photon, abs_dist, refractive_index);
             break;
-        } else {  // if scattering happens first, propagate the photon and resample direction
-            abs_dist -= scattering_length;
-            propagate_photon(photon, scattering_length, refractive_index);
+        } else if (scattering_distance < abs_dist && scattering_distance < intersection_distance) {  // if scattering happens first, propagate the photon and resample direction
+            abs_dist -= scattering_distance;
+            propagate_photon(photon, scattering_distance, refractive_index);
             photon.p = sample_direction(rng);
+        } else {  // if intersection happens first, break out of loop
+            propagate_photon(photon, intersection_distance, refractive_index);
+            break;
         }
     }
 }

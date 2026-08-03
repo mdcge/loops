@@ -32,8 +32,9 @@ int main() {
     OpticalProperty absorption_length(WAVELENGTHS_250, ABSORPTION_LENGTHS);
     OpticalProperty refractive_index(WAVELENGTHS_250, REFRACTIVE_INDICES);
     Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
+    Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
 
-    Simulation sim(std::move(parameters), 42);
+    Simulation sim(std::move(parameters), std::move(detector), 42);
     
     // Start timer
     auto start = std::chrono::high_resolution_clock::now();
