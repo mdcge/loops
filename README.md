@@ -26,7 +26,17 @@ At each scatter, the new direction is randomly sampled isotropically. This corre
 
 ### Intersections
 
-TODO
+For LiquidO detector simulations, there are two geometry elements which need to be considered for intersections: the detector vessel and the fibres.
+
+For the detector vessel, only cylinders and cuboids are considered. The distance $t$ from point $\vec{r}$ to these shapes along the direction $\vec{p}$ is given below.
+
+**Cylinder:**
+
+This is treated in two parts: intersection with the curved side wall in the 2D $x$-$y$ plane and intersection with the end caps in the 1D $z$ direction.
+
+Intersection distance to the side wall is given by solving
+
+$$\lVert\vec{r}_{xy} + t\cdot\vec{p}_{xy}\rVert = r$$
 
 ### Pipeline
 
@@ -35,24 +45,30 @@ For each photon, the following steps are performed:
 2. Sample an absorption distance $d_a$ for the photon using the absorption length at the photon's wavelength.
 3. For each photon step:
    1. Sample a scattering distance $d_s$ using the corresponding scattering length.
-   2. If $d_a$ < $d_s$, propagate the photon by $d_a$ then kill it.
-      If $d_s$ < $d_a$, decrease $d_a$ by $d_s$, propagate the photon by $d_s$ and perform another step.
-   3. ADD INTERSECTIONS.
+   2. Calculate the intersection distance to the closest wall $d_i$.
+   3. If
+      1. $d_a$ < $d_s$, $d_i$: propagate the photon by $d_a$ then kill it.
+      2. $d_s$ < $d_a$, $d_i$: decrease $d_a$ by $d_s$, propagate the photon by $d_s$ and perform another step.
+      3. $d_i$ < $d_s$, $d_a$: propagate the photon by $d_i$ then kill it.
 4. Anytime a photon is absorbed or intersected, record its location and time.
 
 ## Performance
 The following table shows the performance difference between four simulation models, each simulating 1000 photons from a single point source in identical media:
 
 1. **GEANT4-nol**: GEANT4 simulation without any scintillator emission spectrum or time profile. All photons are emitted at $t=0$ with a wavelength of 450nm.
-2. **GEANT4**: full GEANT4 simulation with scintillator emission spectrum and time profile.
-3. **CLOOPSv1**: LOOPS simulation running on a single CPU core, without scintillator emission or time profile. All photons are emitted at $t=0$ with a wavelength of 450nm.
-4. **CLOOPSv2**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum and time profile.
+2. **GEANT4-inf**: full GEANT4 simulation with scintillator emission spectrum and time profile in infinite scintillator volume.
+3. **GEANT4**: full GEANT4 simulation with scintillator emission spectrum and time profile in detector with walls.
+4. **CLOOPSv1**: LOOPS simulation running on a single CPU core, without scintillator emission or time profile in infinite scintillator volume. All photons are emitted at $t=0$ with a wavelength of 450nm.
+5. **CLOOPSv2**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum and time profile in infinite scintillator volume.
+6. **CLOOPSv3**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum & time profile and intersections with detector walls (either cylindrical or cuboid).
 
 | Model              | Time per event [s] | Speedup to slowest |
 | :---               | :---:              | ---:               |
-| GEANT4-nol         | 4.08               | 1.06               |
-| GEANT4             | 4.34               | 1.00               |
-| CLOOPSv1           | 0.09               | 48.22              |
-| CLOOPSv2           | 0.08               | 54.25              |
+| GEANT4-nol         | 4.08               | 1.11               |
+| GEANT4-inf         | 4.34               | 1.05               |
+| GEANT4             | 4.54               | 1.00               |
+| CLOOPSv1           | 0.09               | 50.44              |
+| CLOOPSv2           | 0.08               | 56.75              |
+| CLOOPSv3           | 0.24               | 18.92              |
 
-CLOOPSv2 implemented some optimisations relative to CLOOPSv1, which is why it's a little faster even though it implements more physics.
+CLOOPSv2 implemented some optimisations relative to CLOOPSv1, which is why it's a little faster even though it simulates more physics.
