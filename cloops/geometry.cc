@@ -23,7 +23,7 @@ double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
         double c = point.x*point.x + point.y*point.y - r*r;
         double discriminator = b*b - 4*a*c;
         if (discriminator >= 0.0) { // if discriminator gives valid solutions
-            double t_side = (-b + std::sqrt(discriminator)) / (2*a);
+            t_side = (-b + std::sqrt(discriminator)) / (2*a);
         }
     }
 
@@ -32,7 +32,7 @@ double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
     double t_cap = std::numeric_limits<double>::infinity();
     if (d.z != 0.0) { // if d.z == 0, it's a purely radial photon: skip cap check
         double cap_z = std::copysign(z, d.z);  // +z if d -> +z ,  -z if d -> -z
-        double t_cap = (cap_z - point.z) / d.z;  // distance to cap
+        t_cap = (cap_z - point.z) / d.z;  // distance to cap
     }
 
     return std::min(t_side, t_cap);
