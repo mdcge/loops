@@ -19,7 +19,7 @@ const std::vector<double> SCINTILLATION_TIME_CONSTANTS = {-3.6, -13.4, -83.0};
 const std::vector<double> SCINTILLATION_TIME_AMPLITUDES = {0.84, 0.12, 0.04};
 
 int main() {
-    // std::ofstream file("/home/max/phd/loops/data/validation/loops/cloopsv2_pbomb_10000photons.txt");
+    // std::ofstream file("/home/max/phd/loops/data/validation/loops/cloopsv3_cylinder_pbomb_10000photons.txt");
     
     // Simulation parameters
     const int nb_events = 1;
@@ -32,7 +32,8 @@ int main() {
     OpticalProperty absorption_length(WAVELENGTHS_250, ABSORPTION_LENGTHS);
     OpticalProperty refractive_index(WAVELENGTHS_250, REFRACTIVE_INDICES);
     Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
-    Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
+    // Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
+    Detector detector(Vector(0.0, 0.0, 0.0), 1000.0, 1000.0);
 
     Simulation sim(std::move(parameters), std::move(detector), 42);
     
