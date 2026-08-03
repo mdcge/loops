@@ -81,6 +81,6 @@ The following table shows the performance difference between four simulation mod
 | GEANT4             | 4.54               | 1.00               |
 | CLOOPSv1           | 0.09               | 50.44              |
 | CLOOPSv2           | 0.08               | 56.75              |
-| CLOOPSv3           | 0.24               | 18.92              |
+| CLOOPSv3           | 0.23               | 19.74              |
 
 CLOOPSv2 implemented some optimisations relative to CLOOPSv1, which is why it's a little faster even though it simulates more physics.
