@@ -28,6 +28,8 @@ At each scatter, the new direction is randomly sampled isotropically. This corre
 
 For LiquidO detector simulations, there are two geometry elements which need to be considered for intersections: the detector vessel and the fibres.
 
+---
+
 For the detector vessel, only cylinders and cuboids are considered. The distance $t$ from point $\vec{r}$ to these shapes along the direction $\vec{p}$ is given below. The cylinder is defined by its radius $r$ and its half-height $z$. The cuboid is specified by the vector $\vec{s}=(a, b, c)$ which corresponds to the half-sizes of the box along the three axes.
 
 **Cylinder:**
@@ -49,6 +51,8 @@ This is treated in three parts corresponding to the three axes: checking the int
 $$r_i + t_i \cdot p_i = \pm s_i$$
 
 The intersection distance is then the minimum $t = \text{min}(t_x, t_y, t_z)$.
+
+---
 
 ### Pipeline
 
