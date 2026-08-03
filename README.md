@@ -28,15 +28,27 @@ At each scatter, the new direction is randomly sampled isotropically. This corre
 
 For LiquidO detector simulations, there are two geometry elements which need to be considered for intersections: the detector vessel and the fibres.
 
-For the detector vessel, only cylinders and cuboids are considered. The distance $t$ from point $\vec{r}$ to these shapes along the direction $\vec{p}$ is given below.
+For the detector vessel, only cylinders and cuboids are considered. The distance $t$ from point $\vec{r}$ to these shapes along the direction $\vec{p}$ is given below. The cylinder is defined by its radius $r$ and its half-height $z$. The cuboid is specified by the vector $\vec{s}=(a, b, c)$ which corresponds to the half-sizes of the box along the three axes.
 
 **Cylinder:**
+This is treated in two parts: intersection with the curved side wall in the 2D x-y plane and intersection with the end caps in the 1D z direction.
 
-This is treated in two parts: intersection with the curved side wall in the 2D $x$-$y$ plane and intersection with the end caps in the 1D $z$ direction.
+Intersection distance to the side wall is given by solving the following for $t_s$:
 
-Intersection distance to the side wall is given by solving
+$$\lVert\vec{r}_{xy} + t_s\cdot\vec{p}_{xy}\rVert = r$$
 
-$$\lVert\vec{r}_{xy} + t\cdot\vec{p}_{xy}\rVert = r$$
+For the caps, this is done by solving for $t_c$:
+
+$$r_z + t_c\cdot p_z = \pm z$$
+
+The intersection distance is then given by $t = \text{min}(t_s, t_c)$.
+
+**Cuboid:**
+This is treated in three parts corresponding to the three axes: checking the intersection with the $\pm a$ wall, $\pm b$ wall and $\pm c$ wall in the 1D direction of each axis. This is done simply by solving for $t_i$ (where $i=1,2,3$) corresponding to each axis:
+
+$$r_i + t_i \cdot p_i = \pm s_i$$
+
+The intersection distance is then the minimum $t = \text{min}(t_x, t_y, t_z)$.
 
 ### Pipeline
 
