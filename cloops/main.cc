@@ -27,7 +27,9 @@ int main() {
 
     Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
     Vector2D foo = fibres.f00(Vector2D(0.1, 0.0));
+    Vector2D s = fibres.spacing_rectangle();
     std::cout << "f00 = (" << foo.x << ", " << foo.y << ")" << std::endl;
+    std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
     
     // Simulation parameters
     const int nb_events = 1;
