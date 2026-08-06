@@ -17,7 +17,7 @@ Vector2D Fibres::f00(Vector2D O) const {
 }
 
 // Calculate (sx, sy) spacings of rectangular grid
-Vector2D Fibres::spacing_rectangle() {
+Vector2D Fibres::spacing_rectangle() const {
     double epsilon = 0.0001; // to avoid comparison with 0.0 problems
 
     // Sort the x & y positions, then take minimum distance between consecutive elements
@@ -46,7 +46,7 @@ Vector2D Fibres::spacing_rectangle() {
 }
 
 // Calculate s spacing of hexagonal grid
-double Fibres::spacing_hexagon() {
+double Fibres::spacing_hexagon() const {
     double epsilon = 0.0001; // to avoid comparison with 0.0 problems
 
     // Compare distances between each pair of points, take the minimum
@@ -64,7 +64,7 @@ double Fibres::spacing_hexagon() {
 }
 
 // Calculates the rectangular cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing (`sx`, `sy`), given a closest fibre to origin `foo`
-std::pair<int, int> cell_index_rectangle(Vector2D r, Vector2D O, Vector2D s, Vector2D foo) {
+std::pair<int, int> cell_index_rectangle(const Vector2D& r, const Vector2D& O, const Vector2D& s, const Vector2D& foo) {
     Vector2D alpha((O.x - foo.x) / s.x, (O.y - foo.y) / s.y);
     int i = std::floor((r.x - O.x) / s.x + alpha.x + 0.5);
     int j = std::floor((r.y - O.y) / s.y + alpha.y + 0.5);
@@ -72,7 +72,7 @@ std::pair<int, int> cell_index_rectangle(Vector2D r, Vector2D O, Vector2D s, Vec
 }
 
 // Calculates the hexagonal cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing `s`, given a closest fibre to origin `foo`
-std::pair<int, int> cell_index_hexagon(Vector2D r, Vector2D O, double s, Vector2D foo) {
+std::pair<int, int> cell_index_hexagon(const Vector2D& r, const Vector2D& O, double s, const Vector2D& foo) {
     double s_inv = 1/s;
     double sqrt3_inv = 1/std::sqrt(3);
     
