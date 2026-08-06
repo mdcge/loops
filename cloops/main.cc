@@ -32,7 +32,7 @@ int main() {
     Vector2D r(2.5, 0.9);
     std::cout << "f00 = (" << foo.x << ", " << foo.y << ")" << std::endl;
     std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
-    std::pair<int, int> ij = cell_index_rectangle(r, fibres, O, s, foo);
+    std::pair<int, int> ij = cell_index_rectangle(r, O, s, foo);
     std::cout << "Cell index for r = (" << r.x << ", " << r.y << "): (" << ij.first << ", " << ij.second << ")" << std::endl;
     
     // Simulation parameters
