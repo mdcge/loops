@@ -26,10 +26,14 @@ int main() {
     // std::ofstream file("/home/max/phd/loops/data/validation/loops/cloopsv3_cylinder_pbomb_10000photons.txt");
 
     Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
-    Vector2D foo = fibres.f00(Vector2D(0.1, 0.0));
+    Vector2D O(0.1, 0.0);
+    Vector2D foo = fibres.f00(O);
     Vector2D s = fibres.spacing_rectangle();
+    Vector2D r(3.0, 1.0);
     std::cout << "f00 = (" << foo.x << ", " << foo.y << ")" << std::endl;
     std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
+    Vector2D ij = cell_index_rectangle(r, fibres, O, s, foo);
+    std::cout << "Cell index for r = (" << r.x << ", " << r.y << "): (" << ij.x << ", " << ij.y << ")" << std::endl;
     
     // Simulation parameters
     const int nb_events = 1;

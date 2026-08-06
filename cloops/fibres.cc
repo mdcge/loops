@@ -1,6 +1,7 @@
 #include "fibres.hh"
 
 #include <algorithm>
+#include <cmath>
 
 Vector2D Fibres::f00(Vector2D O) const {
     double min_dist2 = std::numeric_limits<double>::infinity();
@@ -60,4 +61,12 @@ double Fibres::spacing_hexagon() {
         }
     }
     return std::sqrt(min_dist2);
+}
+
+// Calculates the cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing (`sx`, `sy`), given a closest fibre to origin `foo`
+Vector2D cell_index_rectangle(Vector2D r, Fibres& fibres, Vector2D O, Vector2D s, Vector2D foo) {
+    Vector2D alpha((O.x - foo.x) / s.x, (O.y - foo.y) / s.y);
+    int i = std::floor((r.x - O.x) / s.x + alpha.x + 0.5);
+    int j = std::floor((r.y - O.y) / s.y + alpha.y + 0.5);
+    return Vector2D(i, j);
 }
