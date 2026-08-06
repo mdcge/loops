@@ -19,7 +19,11 @@ const double SCINTILLATION_RISE_TIME = 0.83;
 const std::vector<double> SCINTILLATION_TIME_CONSTANTS = {-3.6, -13.4, -83.0};
 const std::vector<double> SCINTILLATION_TIME_AMPLITUDES = {0.84, 0.12, 0.04};
 
-const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-1.5, -1.9), Vector2D(-0.5, -1.9), Vector2D(0.5, -1.9), Vector2D(1.5, -1.9), Vector2D(-1.5, -0.8), Vector2D(-0.5, -0.8), Vector2D(0.5, -0.8), Vector2D(1.5, -0.8), Vector2D(-1.5, 0.3), Vector2D(-0.5, 0.3), Vector2D(0.5, 0.3)};
+// Rectangular grid
+// const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-1.5, -1.9), Vector2D(-0.5, -1.9), Vector2D(0.5, -1.9), Vector2D(1.5, -1.9), Vector2D(-1.5, -0.8), Vector2D(-0.5, -0.8), Vector2D(0.5, -0.8), Vector2D(1.5, -0.8), Vector2D(-1.5, 0.3), Vector2D(-0.5, 0.3), Vector2D(0.5, 0.3)};
+// Hexagonal grid
+const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-0.55, -0.25), Vector2D(0.35, -0.25), Vector2D(1.25, -0.25), Vector2D(2.15, -0.25), Vector2D(-0.1, -1.0294), Vector2D(0.8, -1.0294), Vector2D(1.7, -1.0294), Vector2D(-0.1, 0.5294), Vector2D(0.8, 0.5294), Vector2D(1.7, 0.5294)};
+
 const double FIBRE_RADIUS = 0.2;
 
 int main() {
@@ -28,11 +32,14 @@ int main() {
     Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
     Vector2D O(0.1, 0.0);
     Vector2D foo = fibres.f00(O);
-    Vector2D s = fibres.spacing_rectangle();
-    Vector2D r(2.5, 0.9);
+    // Vector2D s = fibres.spacing_rectangle();
+    double s = fibres.spacing_hexagon();
+    Vector2D r(3.05, -0.25);
     std::cout << "f00 = (" << foo.x << ", " << foo.y << ")" << std::endl;
-    std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
-    std::pair<int, int> ij = cell_index_rectangle(r, O, s, foo);
+    // std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
+    std::cout << "Spacing = " << s << std::endl;
+    // std::pair<int, int> ij = cell_index_rectangle(r, O, s, foo);
+    std::pair<int, int> ij = cell_index_hexagon(r, O, s, foo);
     std::cout << "Cell index for r = (" << r.x << ", " << r.y << "): (" << ij.first << ", " << ij.second << ")" << std::endl;
     
     // Simulation parameters

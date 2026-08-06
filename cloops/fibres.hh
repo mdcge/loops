@@ -19,5 +19,6 @@ struct Fibres {
 };
 
 std::pair<int, int> cell_index_rectangle(Vector2D, Vector2D, Vector2D, Vector2D);
+std::pair<int, int> cell_index_hexagon(Vector2D, Vector2D, double, Vector2D);
 
 #endif // FIBRES_H_

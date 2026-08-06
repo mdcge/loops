@@ -70,3 +70,33 @@ std::pair<int, int> cell_index_rectangle(Vector2D r, Vector2D O, Vector2D s, Vec
     int j = std::floor((r.y - O.y) / s.y + alpha.y + 0.5);
     return std::make_pair(i, j);
 }
+
+// Calculates the hexagonal cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing `s`, given a closest fibre to origin `foo`
+std::pair<int, int> cell_index_hexagon(Vector2D r, Vector2D O, double s, Vector2D foo) {
+    double s_inv = 1/s;
+    double sqrt3_inv = 1/std::sqrt(3);
+    
+    Vector2D alpha(O.x - foo.x, O.y - foo.y);
+    // Calculate cube coordinates lying on x + y + z = 0
+    double xc = (r.x - O.x + alpha.x) * s_inv - (r.y - O.y + alpha.y) * s_inv * sqrt3_inv;
+    double yc = 2 * (r.y - O.y + alpha.y) * s_inv * sqrt3_inv;
+    double zc = -(xc + yc);
+
+    // Rounded cube coordinates
+    int qc = std::round(xc);
+    int rc = std::round(yc);
+    int sc = std::round(zc);
+
+    // Round amounts for each coordinate: largest round amount is closest to hexagon boundary
+    double dxc = std::abs(qc - xc);
+    double dyc = std::abs(rc - yc);
+    double dzc = std::abs(sc - zc);
+
+    // Bump coordinate closest to boundary back on the x+y+z=0 plane
+    if (dxc > dyc && dxc > dzc) {
+        qc = -(rc + sc);
+    } else if (dyc > dxc && dyc > dzc) {
+        rc = -(qc + sc);
+    } // no need for `sc = -(qc + rc)` as it's never used
+    return std::make_pair(qc, rc);
+}
