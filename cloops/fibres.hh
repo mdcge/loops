@@ -18,6 +18,6 @@ struct Fibres {
     double spacing_hexagon();
 };
 
-Vector2D cell_index_rectangle(Vector2D, Fibres&, Vector2D, Vector2D, Vector2D);
+std::pair<int, int> cell_index_rectangle(Vector2D, Fibres&, Vector2D, Vector2D, Vector2D);
 
 #endif // FIBRES_H_
