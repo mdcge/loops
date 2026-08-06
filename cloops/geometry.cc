@@ -82,13 +82,14 @@ double circle_intersection_distance(const Vector2D& r, const Vector2D& p, const 
     // =>   a  * t^2  +      b     * t  +      c       =  0
     // =>  t = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
     // for t
+    double a = p.x * p.x + p.y * p.y;
     double b = 2 * (point.x * p.x + point.y * p.y);
     double c = (point.x * point.x + point.y * point.y) - cr * cr;
-    double discriminant = b*b - 4*c; // a = 1 because `p` is normalised
+    double discriminant = b*b - 4*a*c;
     if (discriminant < 0.0) { // if discriminant not valid, return infinity
         return std::numeric_limits<double>::infinity();
     } else { // if discriminant is valid, pick `t` value corresponding to entering distance (assume r outside circle)
-        double t = (-b - std::sqrt(discriminant)) / 2;
+        double t = (-b - std::sqrt(discriminant)) / (2 * a);
         if (t < 0.0) {
             return std::numeric_limits<double>::infinity();
         }
