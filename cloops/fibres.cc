@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include<limits>
 
-Vector2D Fibres::f00(Vector2D O) const {
+// Closest fibre to origin
+Vector2D Fibres::f00(const Vector2D& O) const {
     double min_dist2 = std::numeric_limits<double>::infinity();
     Vector2D foo;
     for (const Vector2D& f : fs) {
@@ -14,6 +16,11 @@ Vector2D Fibres::f00(Vector2D O) const {
         }
     }
     return foo;
+}
+
+// Location of fibre in cell (i, j) in a rectangular grid
+Vector2D Fibres::fij_rectangle(const Vector2D& foo, int i, int j, const Vector2D& s) const {
+    return Vector2D(foo.x + i * s.x, foo.y + j * s.y);
 }
 
 // Calculate (sx, sy) spacings of rectangular grid
@@ -61,6 +68,52 @@ double Fibres::spacing_hexagon() const {
         }
     }
     return std::sqrt(min_dist2);
+}
+
+// Given a cell (i, j) in a rectangular grid, calculate the tx and ty distances along the photon direction `php` from the photon position `phr` needed to reach the x & y cell boundaries
+std::pair<double, double> cell_ts_rectangle(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, const Vector2D& s) {
+    int i = ij.first;
+    int j = ij.second;
+    double fx = foo.x + i * s.x;
+    double fy = foo.y + j * s.y;
+
+    double tx;
+    if (php.x > 0) {
+        tx = (fx + s.x/2 - phr.x) / php.x;
+    } else if (php.x < 0) {
+        tx = (fx - s.x/2 - phr.x) / php.x;
+    } else {
+        tx = std::numeric_limits<double>::infinity();
+    }
+    
+    double ty;
+    if (php.y > 0) {
+        ty = (fy + s.y/2 - phr.y) / php.y;
+    } else if (php.y < 0) {
+        ty = (fy - s.y/2 - phr.y) / php.y;
+    } else {
+        ty = std::numeric_limits<double>::infinity();
+    }
+
+    return std::make_pair(tx, ty);
+}
+
+// Calculate the new cell index in a rectangular grid based on the photon position and direction using the pre-computed (tx, ty) values
+std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const std::pair<double, double> ts, const Vector2D& php) {
+    int i = ij.first; int j = ij.second;
+    double tx = ts.first; double ty = ts.second;
+
+    if (tx <= ty) {
+        return std::make_pair(i + std::copysign(1, php.x), j);
+    } else {
+        return std::make_pair(i, j + std::copysign(1, php.y));
+    }
+}
+
+// Calculate the new photon position in a rectangular grid after stepping to the nearest cell along the photon direction
+Vector2D new_photon_position_rectangle(const std::pair<double, double> ts, const Vector2D& phr, const Vector2D& php) {
+    double tx = ts.first; double ty = ts.second;
+    return phr + std::min(tx, ty) * php;
 }
 
 // Calculates the rectangular cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing (`sx`, `sy`), given a closest fibre to origin `foo`

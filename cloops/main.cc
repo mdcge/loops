@@ -20,28 +20,28 @@ const std::vector<double> SCINTILLATION_TIME_CONSTANTS = {-3.6, -13.4, -83.0};
 const std::vector<double> SCINTILLATION_TIME_AMPLITUDES = {0.84, 0.12, 0.04};
 
 // Rectangular grid
-// const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-1.5, -1.9), Vector2D(-0.5, -1.9), Vector2D(0.5, -1.9), Vector2D(1.5, -1.9), Vector2D(-1.5, -0.8), Vector2D(-0.5, -0.8), Vector2D(0.5, -0.8), Vector2D(1.5, -0.8), Vector2D(-1.5, 0.3), Vector2D(-0.5, 0.3), Vector2D(0.5, 0.3)};
+const std::vector<Vector2D> FIBRE_POSITIONS = {
+    Vector2D(-9.0, -5.5), Vector2D(-7.0, -5.5), Vector2D(-5.0, -5.5), Vector2D(-3.0, -5.5), Vector2D(-1.0, -5.5), Vector2D(1.0, -5.5), Vector2D(3.0, -5.5), Vector2D(5.0, -5.5), Vector2D(7.0, -5.5), Vector2D(9.0, -5.5),
+    Vector2D(-9.0, -4.5), Vector2D(-7.0, -4.5), Vector2D(-5.0, -4.5), Vector2D(-3.0, -4.5), Vector2D(-1.0, -4.5), Vector2D(1.0, -4.5), Vector2D(3.0, -4.5), Vector2D(5.0, -4.5), Vector2D(7.0, -4.5), Vector2D(9.0, -4.5),
+    Vector2D(-9.0, -3.5), Vector2D(-7.0, -3.5), Vector2D(-5.0, -3.5), Vector2D(-3.0, -3.5), Vector2D(-1.0, -3.5), Vector2D(1.0, -3.5), Vector2D(3.0, -3.5), Vector2D(5.0, -3.5), Vector2D(7.0, -3.5), Vector2D(9.0, -3.5),
+    Vector2D(-9.0, -2.5), Vector2D(-7.0, -2.5), Vector2D(-5.0, -2.5), Vector2D(-3.0, -2.5), Vector2D(-1.0, -2.5), Vector2D(1.0, -2.5), Vector2D(3.0, -2.5), Vector2D(5.0, -2.5), Vector2D(7.0, -2.5), Vector2D(9.0, -2.5),
+    Vector2D(-9.0, -1.5), Vector2D(-7.0, -1.5), Vector2D(-5.0, -1.5), Vector2D(-3.0, -1.5), Vector2D(-1.0, -1.5), Vector2D(1.0, -1.5), Vector2D(3.0, -1.5), Vector2D(5.0, -1.5), Vector2D(7.0, -1.5), Vector2D(9.0, -1.5),
+    Vector2D(-9.0, -0.5), Vector2D(-7.0, -0.5), Vector2D(-5.0, -0.5), Vector2D(-3.0, -0.5), Vector2D(-1.0, -0.5), Vector2D(1.0, -0.5), Vector2D(3.0, -0.5), Vector2D(5.0, -0.5), Vector2D(7.0, -0.5), Vector2D(9.0, -0.5),
+    Vector2D(-9.0, 0.5), Vector2D(-7.0, 0.5), Vector2D(-5.0, 0.5), Vector2D(-3.0, 0.5), Vector2D(-1.0, 0.5), Vector2D(1.0, 0.5), Vector2D(3.0, 0.5), Vector2D(5.0, 0.5), Vector2D(7.0, 0.5), Vector2D(9.0, 0.5),
+    Vector2D(-9.0, 1.5), Vector2D(-7.0, 1.5), Vector2D(-5.0, 1.5), Vector2D(-3.0, 1.5), Vector2D(-1.0, 1.5), Vector2D(1.0, 1.5), Vector2D(3.0, 1.5), Vector2D(5.0, 1.5), Vector2D(7.0, 1.5), Vector2D(9.0, 1.5),
+    Vector2D(-9.0, 2.5), Vector2D(-7.0, 2.5), Vector2D(-5.0, 2.5), Vector2D(-3.0, 2.5), Vector2D(-1.0, 2.5), Vector2D(1.0, 2.5), Vector2D(3.0, 2.5), Vector2D(5.0, 2.5), Vector2D(7.0, 2.5), Vector2D(9.0, 2.5),
+    Vector2D(-9.0, 3.5), Vector2D(-7.0, 3.5), Vector2D(-5.0, 3.5), Vector2D(-3.0, 3.5), Vector2D(-1.0, 3.5), Vector2D(1.0, 3.5), Vector2D(3.0, 3.5), Vector2D(5.0, 3.5), Vector2D(7.0, 3.5), Vector2D(9.0, 3.5),
+    Vector2D(-9.0, 4.5), Vector2D(-7.0, 4.5), Vector2D(-5.0, 4.5), Vector2D(-3.0, 4.5), Vector2D(-1.0, 4.5), Vector2D(1.0, 4.5), Vector2D(3.0, 4.5), Vector2D(5.0, 4.5), Vector2D(7.0, 4.5), Vector2D(9.0, 4.5),
+    Vector2D(-9.0, 4.5), Vector2D(-7.0, 5.5), Vector2D(-5.0, 5.5), Vector2D(-3.0, 5.5), Vector2D(-1.0, 5.5), Vector2D(1.0, 5.5), Vector2D(3.0, 5.5), Vector2D(5.0, 5.5), Vector2D(7.0, 5.5), Vector2D(9.0, 5.5)
+};
 // Hexagonal grid
-const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-0.55, -0.25), Vector2D(0.35, -0.25), Vector2D(1.25, -0.25), Vector2D(2.15, -0.25), Vector2D(-0.1, -1.0294), Vector2D(0.8, -1.0294), Vector2D(1.7, -1.0294), Vector2D(-0.1, 0.5294), Vector2D(0.8, 0.5294), Vector2D(1.7, 0.5294)};
+// const std::vector<Vector2D> FIBRE_POSITIONS = {Vector2D(-0.55, -0.25), Vector2D(0.35, -0.25), Vector2D(1.25, -0.25), Vector2D(2.15, -0.25), Vector2D(-0.1, -1.0294), Vector2D(0.8, -1.0294), Vector2D(1.7, -1.0294), Vector2D(-0.1, 0.5294), Vector2D(0.8, 0.5294), Vector2D(1.7, 0.5294)};
 
-const double FIBRE_RADIUS = 0.2;
+const double FIBRE_RADIUS = 0.5;
 
 int main() {
-    // std::ofstream file("/home/max/phd/loops/data/validation/loops/cloopsv3_cylinder_pbomb_10000photons.txt");
+    std::ofstream file("/home/max/phd/loops/data/validation/loops/cloopsv4_pbomb_10000photons.txt");
 
-    Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
-    Vector2D O(0.1, 0.0);
-    Vector2D foo = fibres.f00(O);
-    // Vector2D s = fibres.spacing_rectangle();
-    double s = fibres.spacing_hexagon();
-    Vector2D r(3.05, -0.25);
-    std::cout << "f00 = (" << foo.x << ", " << foo.y << ")" << std::endl;
-    // std::cout << "Spacing = (" << s.x << ", " << s.y << ")" << std::endl;
-    std::cout << "Spacing = " << s << std::endl;
-    // std::pair<int, int> ij = cell_index_rectangle(r, O, s, foo);
-    std::pair<int, int> ij = cell_index_hexagon(r, O, s, foo);
-    std::cout << "Cell index for r = (" << r.x << ", " << r.y << "): (" << ij.first << ", " << ij.second << ")" << std::endl;
-    
     // Simulation parameters
     const int nb_events = 1;
     const int nb_photons = 10000;
@@ -55,8 +55,9 @@ int main() {
     Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
     // Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
     Detector detector(Vector(0.0, 0.0, 0.0), 1000.0, 1000.0);
+    Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
 
-    Simulation sim(std::move(parameters), std::move(detector), 42);
+    Simulation sim(std::move(parameters), std::move(detector), fibres, 42);
     
     // Start timer
     auto start = std::chrono::high_resolution_clock::now();
@@ -66,11 +67,11 @@ int main() {
             Photon photon = sim.generate_photon(origin);
             sim.track_photon(photon, max_steps);
             
-            // file << photon.r.x << "," << photon.r.y << "," << photon.r.z << "," << photon.t << "\n";
+            file << photon.r.x << "," << photon.r.y << "," << photon.r.z << "," << photon.t << "\n";
         }
     }
 
-    // file.close();
+    file.close();
 
     // Stop timer
     auto end = std::chrono::high_resolution_clock::now();

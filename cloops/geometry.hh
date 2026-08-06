@@ -26,7 +26,10 @@ struct Detector {
     Detector(Vector origin, double radius, double half_height) : shape(Cylinder {origin, radius, half_height}) {}
     Detector(Vector origin, Vector half_sizes) : shape(Cuboid {origin, half_sizes}) {}
 
+    Vector O() const;
     double intersection_distance(const Vector&, const Vector&) const;
 };
+
+double circle_intersection_distance(const Vector2D&, const Vector2D&, const Vector2D&, double);
 
 #endif // GEOMETRY_H_
