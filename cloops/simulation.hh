@@ -23,11 +23,15 @@ struct Simulation {
         unsigned seed
     ) : params(std::move(parameters)),
         detector(std::move(detector)),
-        fibres(fibres),
+        fibres(std::move(fibres)),
         rng(seed),
         emission_spectrum_distribution(params.emission_spectrum.values.begin(), params.emission_spectrum.values.end()),
         scintillation_component_distribution(params.scint_time_amps.begin(), params.scint_time_amps.end())
-        {}
+    {
+        Vector2D O2d(this->detector.O().x, this->detector.O().y);
+        this->fibres.foo = this->fibres.f00(O2d);
+        this->fibres.build_fibre_cells_rectangle(O2d, this->fibres.foo, this->fibres.spacing_rectangle());
+    }
 
     Photon generate_photon(Vector);
     void track_photon(Photon&, int);

@@ -15,13 +15,21 @@ struct Fibres {
     std::vector<Vector2D> fs;  // fibre positions [mm]
     double fr;  // fibre radius [mm]
     LatticeType lattice_type;  // type of lattice: rectangular or hexagonal
+    Vector2D foo;  // 2D position of "central" fibre (closest to detector origin)
+    Spacing s;  // fibre spacing
     std::set<std::pair<int, int>> fibre_cells;  // set of cells which contain a fibre
 
-    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius, LatticeType lattice_type) : fs(fibre_positions), fr(fibre_radius), lattice_type(lattice_type) {}
+    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius, LatticeType lattice_type)
+        : fs(fibre_positions),
+          fr(fibre_radius),
+          lattice_type(lattice_type),
+          s(lattice_type == LatticeType::Rectangular
+                ? Spacing(spacing_rectangle())
+                : Spacing(spacing_hexagon()))
+    {}
 
     Vector2D f00(const Vector2D&) const;
     Vector2D fij_rectangle(const Vector2D&, int, int, const Vector2D&) const;
-    Spacing spacing() const;
     void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
 
     // Grid-specific functions

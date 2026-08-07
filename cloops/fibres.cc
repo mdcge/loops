@@ -71,15 +71,6 @@ double Fibres::spacing_hexagon() const {
     return std::sqrt(min_dist2);
 }
 
-// General spacing function
-Spacing Fibres::spacing() const {
-    switch (lattice_type) {
-        case LatticeType::Rectangular: return spacing_rectangle();
-        case LatticeType::Hexagonal:   return spacing_hexagon();
-    }
-    throw std::logic_error("Fibres::spcaing(): unhandled LatticType.");
-}
-
 // Populate the fibre cell set with (i, j) cells which contain fibres
 void Fibres::build_fibre_cells_rectangle(const Vector2D& O, const Vector2D& foo, const Vector2D& s) {
     fibre_cells.clear();

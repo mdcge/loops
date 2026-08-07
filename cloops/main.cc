@@ -56,10 +56,9 @@ int main() {
     Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
     // Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
     Detector detector(O, 1000.0, 1000.0);
-    Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
-    fibres.build_fibre_cells_rectangle(Vector2D(detector.O().x, detector.O().y), fibres.f00(Vector2D(detector.O().x, detector.O().y)), fibres.spacing_rectangle());
+    Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS, LatticeType::Rectangular);
 
-    Simulation sim(std::move(parameters), std::move(detector), fibres, 42);
+    Simulation sim(std::move(parameters), std::move(detector), std::move(fibres), 42);
     
     // Start timer
     auto start = std::chrono::high_resolution_clock::now();
