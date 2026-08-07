@@ -121,26 +121,26 @@ double Fibres::spacing_hexagon() const {
 }
 
 // Populate the fibre cell set with (i, j) cells which contain fibres
-void Fibres::build_fibre_cells_rectangle(const Vector2D& O, const Vector2D& foo, const Vector2D& s) {
+void Fibres::build_fibre_cells_rectangle(const Vector2D& foo, const Vector2D& s) {
     fibre_cells.clear();
     for (const Vector2D& f : fs) {
-        fibre_cells.insert(cell_index_rectangle(f, O, s, foo));
+        fibre_cells.insert(cell_index_rectangle(f, s, foo));
     }
 }
 
 // Populate the fibre cell set with (i, j) cells which contain fibres
-void Fibres::build_fibre_cells_hexagon(const Vector2D& O, const Vector2D& foo, double s) {
+void Fibres::build_fibre_cells_hexagon(const Vector2D& foo, double s) {
     fibre_cells.clear();
     for (const Vector2D& f : fs) {
-        fibre_cells.insert(cell_index_hexagon(f, O, s, foo));
+        fibre_cells.insert(cell_index_hexagon(f, s, foo));
     }
 }
 
-void Fibres::build_fibre_cells(const Vector2D& O) {
+void Fibres::build_fibre_cells() {
     if (lattice_type == LatticeType::Rectangular) {
-        build_fibre_cells_rectangle(O, foo, std::get<Vector2D>(s));
+        build_fibre_cells_rectangle(foo, std::get<Vector2D>(s));
     } else {
-        build_fibre_cells_hexagon(O, foo, std::get<double>(s));
+        build_fibre_cells_hexagon(foo, std::get<double>(s));
     }
 }
 
@@ -274,22 +274,20 @@ Vector2D new_photon_position(const std::vector<double> ts, const Vector2D& phr, 
 }
 
 // Calculates the rectangular cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing (`sx`, `sy`), given a closest fibre to origin `foo`
-std::pair<int, int> cell_index_rectangle(const Vector2D& r, const Vector2D& O, const Vector2D& s, const Vector2D& foo) {
-    Vector2D alpha((O.x - foo.x) / s.x, (O.y - foo.y) / s.y);
-    int i = std::floor((r.x - O.x) / s.x + alpha.x + 0.5);
-    int j = std::floor((r.y - O.y) / s.y + alpha.y + 0.5);
+std::pair<int, int> cell_index_rectangle(const Vector2D& r, const Vector2D& s, const Vector2D& foo) {
+    int i = std::floor((r.x - foo.x) / s.x + 0.5);
+    int j = std::floor((r.y - foo.y) / s.y + 0.5);
     return std::make_pair(i, j);
 }
 
 // Calculates the hexagonal cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing `s`, given a closest fibre to origin `foo`
-std::pair<int, int> cell_index_hexagon(const Vector2D& r, const Vector2D& O, double s, const Vector2D& foo) {
+std::pair<int, int> cell_index_hexagon(const Vector2D& r, double s, const Vector2D& foo) {
     double s_inv = 1/s;
     double sqrt3_inv = 1/std::sqrt(3);
     
-    Vector2D alpha(O.x - foo.x, O.y - foo.y);
     // Calculate cube coordinates lying on x + y + z = 0
-    double xc = (r.x - O.x + alpha.x) * s_inv - (r.y - O.y + alpha.y) * s_inv * sqrt3_inv;
-    double yc = 2 * (r.y - O.y + alpha.y) * s_inv * sqrt3_inv;
+    double xc = (r.x - foo.x) * s_inv - (r.y - foo.y) * s_inv * sqrt3_inv;
+    double yc = 2 * (r.y - foo.y) * s_inv * sqrt3_inv;
     double zc = -(xc + yc);
 
     // Rounded cube coordinates
@@ -311,10 +309,10 @@ std::pair<int, int> cell_index_hexagon(const Vector2D& r, const Vector2D& O, dou
     return std::make_pair(qc, rc);
 }
 
-std::pair<int, int> cell_index(const Vector2D& r, const Vector2D& O, const Spacing& s, const Vector2D& foo, LatticeType lattice_type) {
+std::pair<int, int> cell_index(const Vector2D& r, const Spacing& s, const Vector2D& foo, LatticeType lattice_type) {
     if (lattice_type == LatticeType::Rectangular) {
-        return cell_index_rectangle(r, O, std::get<Vector2D>(s), foo);
+        return cell_index_rectangle(r, std::get<Vector2D>(s), foo);
     } else {
-        return cell_index_hexagon(r, O, std::get<double>(s), foo);
+        return cell_index_hexagon(r, std::get<double>(s), foo);
     }
 }

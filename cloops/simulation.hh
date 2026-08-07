@@ -30,7 +30,7 @@ struct Simulation {
     {
         Vector2D O2d(this->detector.O().x, this->detector.O().y);
         this->fibres.foo = this->fibres.f00(O2d);
-        this->fibres.build_fibre_cells(O2d);
+        this->fibres.build_fibre_cells();
     }
 
     Photon generate_photon(Vector);

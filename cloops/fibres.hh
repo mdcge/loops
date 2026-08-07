@@ -32,25 +32,25 @@ struct Fibres {
 
     Vector2D f00(const Vector2D&) const;
     Vector2D fij(const Vector2D&, int, int);
-    void build_fibre_cells(const Vector2D&);
+    void build_fibre_cells();
     
     // Grid-specific functions
     Vector2D fij_rectangle(const Vector2D&, int, int, const Vector2D&) const;
     Vector2D fij_hexagon(const Vector2D&, int, int, double) const;
     Vector2D spacing_rectangle() const;
     double spacing_hexagon() const;
-    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
-    void build_fibre_cells_hexagon(const Vector2D&, const Vector2D&, double);
+    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&);
+    void build_fibre_cells_hexagon(const Vector2D&, double);
 };
 
-std::pair<int, int> cell_index(const Vector2D&, const Vector2D&, const Spacing&, const Vector2D&, LatticeType);
+std::pair<int, int> cell_index(const Vector2D&, const Spacing&, const Vector2D&, LatticeType);
 std::pair<int, int> new_cell_index(const std::pair<int, int>, const std::vector<double>, const Vector2D&, LatticeType);
 std::vector<double> cell_ts(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, const Spacing&, LatticeType);
 Vector2D new_photon_position(const std::vector<double>, const Vector2D&, const Vector2D&, LatticeType);
 
 // Grid-specific functions
-std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
-std::pair<int, int> cell_index_hexagon(const Vector2D&, const Vector2D&, double, const Vector2D&);
+std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
+std::pair<int, int> cell_index_hexagon(const Vector2D&, double, const Vector2D&);
 std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int>, const std::vector<double>, const Vector2D&);
 std::pair<int, int> new_cell_index_hexagon(const std::pair<int, int>, const std::vector<double>, const Vector2D&);
 std::vector<double> cell_ts_rectangle(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
