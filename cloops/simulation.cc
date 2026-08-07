@@ -75,7 +75,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
 
             // If no fibre intersection in this cell or no fibre in this cell, increment total distance and step to next cell, updating cell indices and photon position
             voxel_traversal_distance += cell_exit_distance;
-            std::pair<int, int> new_ij = new_cell_index_rectangle(std::make_pair(ci, cj), ts, photon_p_2d);
+            std::pair<int, int> new_ij = new_cell_index(std::make_pair(ci, cj), ts, photon_p_2d, fibres.lattice_type);
             ci = new_ij.first;
             cj = new_ij.second;
             photon_r_2d = new_photon_position_rectangle(ts, photon_r_2d, photon_p_2d);

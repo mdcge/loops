@@ -193,6 +193,30 @@ std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const
     }
 }
 
+// Calculate the new cell index in a hexagonal grid based on the photon position and direction using the pre-computed (tx, ty) values
+std::pair<int, int> new_cell_index_hexagon(const std::pair<int, int> ij, const std::vector<double> ts, const Vector2D& php) {
+    double sqrt3 = std::sqrt(3);
+    int i = ij.first; int j = ij.second;
+    Vector2D n1(1.0, 0.0); Vector2D n2(0.5, sqrt3/2.0); Vector2D n3(-0.5, sqrt3/2.0);
+    double t1 = ts[0]; double t2 = ts[1]; double t3 = ts[2];
+
+    if (t1 <= t2 && t1 <= t3) {
+        return std::make_pair(i + std::copysign(1, dot(n1, php)), j);
+    } else if (t2 <= t1 && t2 <= t3) {
+        return std::make_pair(i, j + std::copysign(1, dot(n2, php)));
+    } else {
+        return std::make_pair(i - std::copysign(1, dot(n3, php)), j + std::copysign(1, dot(n3, php)));
+    }
+}
+
+std::pair<int, int> new_cell_index(const std::pair<int, int> ij, const std::vector<double> ts, const Vector2D& php, LatticeType lattice_type) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return new_cell_index_rectangle(ij, ts, php);
+    } else {
+        return new_cell_index_hexagon(ij, ts, php);
+    }
+}
+
 // Calculate the new photon position in a rectangular grid after stepping to the nearest cell along the photon direction
 Vector2D new_photon_position_rectangle(const std::vector<double> ts, const Vector2D& phr, const Vector2D& php) {
     double tx = ts[0]; double ty = ts[1];
