@@ -79,6 +79,22 @@ void Fibres::build_fibre_cells_rectangle(const Vector2D& O, const Vector2D& foo,
     }
 }
 
+// Populate the fibre cell set with (i, j) cells which contain fibres
+void Fibres::build_fibre_cells_hexagon(const Vector2D& O, const Vector2D& foo, double s) {
+    fibre_cells.clear();
+    for (const Vector2D& f : fs) {
+        fibre_cells.insert(cell_index_hexagon(f, O, s, foo));
+    }
+}
+
+void Fibres::build_fibre_cells(const Vector2D& O) {
+    if (lattice_type == LatticeType::Rectangular) {
+        build_fibre_cells_rectangle(O, foo, std::get<Vector2D>(s));
+    } else {
+        build_fibre_cells_hexagon(O, foo, std::get<double>(s));
+    }
+}
+
 // Given a cell (i, j) in a rectangular grid, calculate the tx and ty distances along the photon direction `php` from the photon position `phr` needed to reach the x & y cell boundaries
 std::pair<double, double> cell_ts_rectangle(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, const Vector2D& s) {
     int i = ij.first;

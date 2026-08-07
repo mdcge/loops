@@ -30,11 +30,13 @@ struct Fibres {
 
     Vector2D f00(const Vector2D&) const;
     Vector2D fij_rectangle(const Vector2D&, int, int, const Vector2D&) const;
-    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
-
+    void build_fibre_cells(const Vector2D&);
+    
     // Grid-specific functions
     Vector2D spacing_rectangle() const;
     double spacing_hexagon() const;
+    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
+    void build_fibre_cells_hexagon(const Vector2D&, const Vector2D&, double);
 };
 
 std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
