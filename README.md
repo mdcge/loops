@@ -54,6 +54,96 @@ The intersection distance is then the minimum $t = \text{min}(t_x, t_y, t_z)$.
 
 ---
 
+For the fibres, only two grid types are supported: rectangular and equilateral triangular. Only straight, cylindrical fibres along the $z$ axis are considered, allowing them to be treated purely in two dimensions. All subsequent calculations are done in 2D.
+
+Rectangular lattices are encoded with a spacing vector $\vec{s}=(s_x, s_y)$ which represents the spacing between the columns and rows of fibres respectively. Triangular lattices only require a single $s$ spacing, as that uniquely determines the equilateral triangles whose corners correspond to fibre locations.
+
+The whole fibre intersection procedure is based on a voxel traversing algorithm. The basis of this is constructing the Voronoi cells for the fibre positions: these are rectangles for the rectangular grid and hexagons for the triangular grid. By definition of Voronoi cells, the photon only needs to check the intersection with the fibre of the Voronoi cell it's in. If no intersection occurs in that fibre, the photon can be propagated to the next cell and the steps repeated. This can be interrupted as soon as the distance checked surpasses that of one of the other interactions.
+
+The algorithm is comprised of two main parts: initialisation and traversal.
+
+**Initialisation:**
+This involves determining which cell ($i$, $j$) the original photon position ($\vec{r}$) is in. To have a consistent description across detector geometries, the cell which contains the detector origin $\vec{O}$ is defined to be cell (0, 0). The corresponding fibre position is therefore denoted $\vec{f}_ {00}$. The offset vector is given by $\vec{\alpha}=\vec{O}-\vec{f}_{00}$.
+
+For the rectangular case, the cell which contains the photon position $\vec{r}$ is
+
+$$i=\left\lfloor\frac{r_x - f_{00}_x}{s_x} + \frac{1}{2}\right\rfloor$$
+$$j=\left\lfloor\frac{r_y - f_{00}_y}{s_y} + \frac{1}{2}\right\rfloor$$
+
+For the hexagonal case, a cube coordinate rounding technique is used to snap the photon position $\vec{r}$ to cell indices. First the cube coordinates are generated along the $x+y+z=0$ plane:
+
+$$x_c=\frac{r_x - f_{00}_x}{s} - \frac{r_y - f_{00}_y}{s\sqrt{3}}$$
+$$y_c=\frac{2(r_y - f_{00}_y)}{s\sqrt{3}}$$
+$$z_c=-(x_c + y_c)$$
+
+Then, they are rounded and the round amount calculated:
+
+$$q_c=\text{round}(x_c)\text{ ,  }\Delta x_c=|q_c - x_c|$$
+$$r_c=\text{round}(y_c)\text{ ,  }\Delta y_c=|r_c - y_c|$$
+$$s_c=\text{round}(z_c)\text{ ,  }\Delta z_c=|s_c - z_c|$$
+
+The coordinate with the largest rounding amount was the one closest to a cell boundary, so the final cell index is given by:
+
+$$\begin{cases}(i, j) = (-(r_c + s_c), r_c)&\text{  if }\Delta x_c > \Delta y_c, \Delta z_c \\\\ (i, j) = (q_c, -(q_c + s_c))&\text{  if }\Delta y_c > \Delta x_c, \Delta z_c \\\\ (i, j) = (q_c, r_c)&\text{  otherwise}\end{cases}$$
+
+**Traversal:**
+Once the original cell is known, the fibre intersection can be calculated for the fibre in that cell. If the cell is not hit, we can safely march to the boundary of the next cell (as each cell only contains a single fibre by construction) and repeat the process. In both cases, this algorithm relies on finding the scaling factor $t$ required to move along the photon direction $\vec{p}$ to hit the next boundary. The fibre position in cell (i, j) is denoted $\vec{f}_{ij}$.
+
+In the rectangular case, we have
+
+$$
+\vec{f}_ {ij} = \vec{f}_ {00} + \begin{pmatrix}
+  is_x \\
+  js_y
+\end{pmatrix}
+$$
+
+from which the $t$ value to each boundary given by
+
+$$t_x=\frac{{f_{ij}}_x + \text{sign}(p_x)\frac{s_x}{2} - r_x}{p_x}$$
+$$t_y=\frac{{f_{ij}}_y + \text{sign}(p_y)\frac{s_y}{2} - r_y}{p_y}$$
+
+Then, the cell index is updated with
+
+$$\begin{cases}i\text{+=}\text{sign}(p_x)&\text{  if }t_x\leq t_y \\\\ j\text{+=}\text{sign}(p_y)&\text{  if }t_y< t_x\end{cases}$$
+
+and the photon position with
+
+$$\vec{r} \text{+=} \text{min}(t_x, t_y)\vec{p}$$
+
+For the hexagonal lattice, we define the eigenvectors
+
+$$\vec{n}_1=\begin{pmatrix}
+  1 \\
+  0
+\end{pmatrix}
+\text{ ,  }
+\vec{n}_2=\begin{pmatrix}
+  1/2 \\
+  \sqrt{3}/2
+\end{pmatrix}
+\text{ ,  }
+\vec{n}_3=\begin{pmatrix}
+  -1/2 \\
+  \sqrt{3}/2
+\end{pmatrix}$$
+
+Then, the three $t$ values are calculated by
+
+$$t_k=\frac{{f_{ij}}_k + \text{sign}(p_k)\frac{s}{2} - r_k}{p_k}$$
+
+where the $k$ component of a vector $\vec{v}$ is given by
+
+$$v_k=\vec{v}\cdot \vec{n}_k$$
+
+This time, the cell index is updated with
+
+$$\begin{cases}i\text{+=}\text{sign}(p_1)&\text{  if }t_1< t_2, t_3 \\\\ j\text{+=}\text{sign}(p_2)&\text{  if }t_2< t_1, t_3 \\\\ i\text{-=}\text{sign}(p_3),j\text{+=}\text{sign}(p_3)&\text{  if }t_3< t_1, t_2\end{cases}$$
+
+and the photon position with
+
+$$\vec{r}\text{+=}\text{min}(t_k)\vec{p}$$
+
 ### Pipeline
 
 For each photon, the following steps are performed:
@@ -62,11 +152,13 @@ For each photon, the following steps are performed:
 3. For each photon step:
    1. Sample a scattering distance $d_s$ using the corresponding scattering length.
    2. Calculate the intersection distance to the closest wall $d_i$.
-   3. If
+   3. Calculate the distance to a fibre $d_f$, updated cell-by-cell during the voxel traversal.
+   4. If
       1. $d_a$ < $d_s$, $d_i$: propagate the photon by $d_a$ then kill it.
       2. $d_s$ < $d_a$, $d_i$: decrease $d_a$ by $d_s$, propagate the photon by $d_s$ and perform another step.
       3. $d_i$ < $d_s$, $d_a$: propagate the photon by $d_i$ then kill it.
-4. Anytime a photon is absorbed or intersected, record its location and time.
+      4. $d_f$ < $d_s$, $d_a$, $d_i$ at any point, propagate the photon by $d_f$ then kill it.
+  5. Anytime a photon is absorbed or intersected, record its location and time.
 
 ## Performance
 The following table shows the performance difference between four simulation models, each simulating 1000 photons from a single point source in identical media:
