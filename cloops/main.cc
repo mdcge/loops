@@ -48,14 +48,16 @@ int main() {
     const int max_steps = 100000;
     
     Vector origin(0.0, 0.0, 0.0);
+    Vector O(0.0, 0.0, 0.0);
     OpticalProperty emission_spectrum(WAVELENGTHS_250, EMISSION_SPECTRUM);
     OpticalProperty scattering_length(WAVELENGTHS_350, SCATTERING_LENGTHS);
     OpticalProperty absorption_length(WAVELENGTHS_250, ABSORPTION_LENGTHS);
     OpticalProperty refractive_index(WAVELENGTHS_250, REFRACTIVE_INDICES);
     Parameters parameters(emission_spectrum, scattering_length, absorption_length, refractive_index, SCINTILLATION_RISE_TIME, SCINTILLATION_TIME_CONSTANTS, SCINTILLATION_TIME_AMPLITUDES);
     // Detector detector(Vector(0.0, 0.0, 0.0), Vector(200.0, 300.0, 400.0));
-    Detector detector(Vector(0.0, 0.0, 0.0), 1000.0, 1000.0);
+    Detector detector(O, 1000.0, 1000.0);
     Fibres fibres(FIBRE_POSITIONS, FIBRE_RADIUS);
+    fibres.build_fibre_cells_rectangle(Vector2D(detector.O().x, detector.O().y), fibres.f00(Vector2D(detector.O().x, detector.O().y)), fibres.spacing_rectangle());
 
     Simulation sim(std::move(parameters), std::move(detector), fibres, 42);
     

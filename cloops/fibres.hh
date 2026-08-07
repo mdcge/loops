@@ -19,6 +19,7 @@ struct Fibres {
     Vector2D fij_rectangle(const Vector2D&, int, int, const Vector2D&) const;
     Vector2D spacing_rectangle() const;
     double spacing_hexagon() const;
+    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
 };
 
 std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
