@@ -44,6 +44,7 @@ struct Fibres {
 std::pair<int, int> cell_index(const Vector2D&, const Vector2D&, const Spacing&, const Vector2D&, LatticeType);
 std::pair<int, int> new_cell_index(const std::pair<int, int>, const std::vector<double>, const Vector2D&, LatticeType);
 std::vector<double> cell_ts(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, const Spacing&, LatticeType);
+Vector2D new_photon_position(const std::vector<double>, const Vector2D&, const Vector2D&, LatticeType);
 
 // Grid-specific functions
 std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
@@ -53,5 +54,6 @@ std::pair<int, int> new_cell_index_hexagon(const std::pair<int, int>, const std:
 std::vector<double> cell_ts_rectangle(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
 std::vector<double> cell_ts_hexagon(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, double);
 Vector2D new_photon_position_rectangle(const std::vector<double>, const Vector2D&, const Vector2D&);
+Vector2D new_photon_position_hexagon(const std::vector<double>, const Vector2D&, const Vector2D&);
 
 #endif // FIBRES_H_

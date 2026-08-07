@@ -78,7 +78,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             std::pair<int, int> new_ij = new_cell_index(std::make_pair(ci, cj), ts, photon_p_2d, fibres.lattice_type);
             ci = new_ij.first;
             cj = new_ij.second;
-            photon_r_2d = new_photon_position_rectangle(ts, photon_r_2d, photon_p_2d);
+            photon_r_2d = new_photon_position(ts, photon_r_2d, photon_p_2d, fibres.lattice_type);
         }
 
         // === INTERACTION TYPE ===

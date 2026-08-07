@@ -223,6 +223,20 @@ Vector2D new_photon_position_rectangle(const std::vector<double> ts, const Vecto
     return phr + std::min(tx, ty) * php;
 }
 
+// Calculate the new photon position in a hexagonal grid after stepping to the nearest cell along the photon direction
+Vector2D new_photon_position_hexagon(const std::vector<double> ts, const Vector2D& phr, const Vector2D& php) {
+    double t1 = ts[0]; double t2 = ts[1]; double t3 = ts[2];
+    return phr + std::min({t1, t2, t3}) * php;
+}
+
+Vector2D new_photon_position(const std::vector<double> ts, const Vector2D& phr, const Vector2D& php, LatticeType lattice_type) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return new_photon_position_rectangle(ts, phr, php);
+    } else {
+        return new_photon_position_hexagon(ts, phr, php);
+    }
+}
+
 // Calculates the rectangular cell index (i, j) in which point `r` lies in a detector with origin `O` with grid spacing (`sx`, `sy`), given a closest fibre to origin `foo`
 std::pair<int, int> cell_index_rectangle(const Vector2D& r, const Vector2D& O, const Vector2D& s, const Vector2D& foo) {
     Vector2D alpha((O.x - foo.x) / s.x, (O.y - foo.y) / s.y);
