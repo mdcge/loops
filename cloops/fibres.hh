@@ -8,18 +8,25 @@
 
 #include "vector.hh"
 
+enum struct LatticeType { Rectangular, Hexagonal };
+using Spacing = std::variant<Vector2D, double>;
+
 struct Fibres {
     std::vector<Vector2D> fs;  // fibre positions [mm]
     double fr;  // fibre radius [mm]
+    LatticeType lattice_type;  // type of lattice: rectangular or hexagonal
     std::set<std::pair<int, int>> fibre_cells;  // set of cells which contain a fibre
 
-    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius) : fs(fibre_positions), fr(fibre_radius) {}
+    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius, LatticeType lattice_type) : fs(fibre_positions), fr(fibre_radius), lattice_type(lattice_type) {}
 
     Vector2D f00(const Vector2D&) const;
     Vector2D fij_rectangle(const Vector2D&, int, int, const Vector2D&) const;
+    Spacing spacing() const;
+    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
+
+    // Grid-specific functions
     Vector2D spacing_rectangle() const;
     double spacing_hexagon() const;
-    void build_fibre_cells_rectangle(const Vector2D&, const Vector2D&, const Vector2D&);
 };
 
 std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
