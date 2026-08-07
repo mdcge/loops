@@ -24,6 +24,19 @@ Vector2D Fibres::fij_rectangle(const Vector2D& foo, int i, int j, const Vector2D
     return Vector2D(foo.x + i * s.x, foo.y + j * s.y);
 }
 
+// Location of fibre in cell (i, j) in a hexagonal grid
+Vector2D Fibres::fij_hexagon(const Vector2D& foo, int i, int j, double s) const {
+    return Vector2D(foo.x + (i + j/2.0) * s, foo.y + (j * std::sqrt(3)/2.0) * s);
+}
+
+Vector2D Fibres::fij(const Vector2D& foo, int i, int j) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return fij_rectangle(foo, i, j, std::get<Vector2D>(s));
+    } else {
+        return fij_hexagon(foo, i, j, std::get<double>(s));
+    }
+}
+
 // Calculate (sx, sy) spacings of rectangular grid
 Vector2D Fibres::spacing_rectangle() const {
     double epsilon = 0.0001; // to avoid comparison with 0.0 problems

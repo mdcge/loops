@@ -61,7 +61,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             double cell_exit_distance = std::min(ts.first, ts.second);
 
             // Distance to fibre in this cell (infinity if no intersection)
-            Vector2D fibre_centre = fibres.fij_rectangle(foo, ci, cj, s);
+            Vector2D fibre_centre = fibres.fij(foo, ci, cj);
             bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
             
             // Only continue with checks if cell has a fibre
