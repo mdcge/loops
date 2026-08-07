@@ -33,8 +33,6 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
     double absorption_distance = sample_length(params.absorption_length.at(photon.wl), rng);  // sample absorption distance
     double refractive_index = params.refractive_index.at(photon.wl);  // look up refractive index at this wavelength
     double mean_scattering_length = params.scattering_length.at(photon.wl);  // look up mean scattering length at this wavelength
-    Vector2D s = fibres.spacing_rectangle();  // calculate grid spacings
-    Vector2D foo = fibres.f00(Vector2D(detector.O().x, detector.O().y));  // calculate (0, 0) fibre position
     
     // === LOOP ===
     for (int i=0; i<max_steps; i++) {
@@ -57,11 +55,11 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
         while (voxel_traversal_distance < max_interaction_distance) {
             // Distance to exit current cell `t`
-            std::pair<double, double> ts = cell_ts_rectangle(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, foo, s);
-            double cell_exit_distance = std::min(ts.first, ts.second);
+            std::vector<double> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
+            double cell_exit_distance = *std::min_element(ts.begin(), ts.end());
 
             // Distance to fibre in this cell (infinity if no intersection)
-            Vector2D fibre_centre = fibres.fij(foo, ci, cj);
+            Vector2D fibre_centre = fibres.fij(fibres.foo, ci, cj);
             bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
             
             // Only continue with checks if cell has a fibre

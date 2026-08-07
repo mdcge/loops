@@ -109,7 +109,7 @@ void Fibres::build_fibre_cells(const Vector2D& O) {
 }
 
 // Given a cell (i, j) in a rectangular grid, calculate the tx and ty distances along the photon direction `php` from the photon position `phr` needed to reach the x & y cell boundaries
-std::pair<double, double> cell_ts_rectangle(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, const Vector2D& s) {
+std::vector<double> cell_ts_rectangle(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, const Vector2D& s) {
     int i = ij.first;
     int j = ij.second;
     double fx = foo.x + i * s.x;
@@ -133,13 +133,58 @@ std::pair<double, double> cell_ts_rectangle(const std::pair<int, int> ij, const 
         ty = std::numeric_limits<double>::infinity();
     }
 
-    return std::make_pair(tx, ty);
+    return std::vector<double>{tx, ty};
+}
+
+// Given a cell (i, j) in a hexagonal grid, calculate the tx and ty distances along the photon direction `php` from the photon position `phr` needed to reach the x & y cell boundaries
+std::vector<double> cell_ts_hexagon(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, double s) {
+    double sqrt3 = std::sqrt(3);
+    int i = ij.first; int j = ij.second;
+    Vector2D n1(1.0, 0.0); Vector2D n2(0.5, sqrt3/2.0); Vector2D n3(-0.5, sqrt3/2.0);
+    Vector2D f(foo.x + (i + j/2.0) * s, foo.y + (j * sqrt3/2.0) * s);
+
+    double t1;
+    if (dot(n1, php) > 0) {
+        t1 = (dot(n1, f) + s/2 - dot(n1, phr)) / dot(n1, php);
+    } else if (dot(n1, php) < 0) {
+        t1 = (dot(n1, f) - s/2 - dot(n1, phr)) / dot(n1, php);
+    } else {
+        t1 = std::numeric_limits<double>::infinity();
+    }
+    
+    double t2;
+    if (dot(n2, php) > 0) {
+        t2 = (dot(n2, f) + s/2 - dot(n2, phr)) / dot(n2, php);
+    } else if (dot(n2, php) < 0) {
+        t2 = (dot(n2, f) - s/2 - dot(n2, phr)) / dot(n2, php);
+    } else {
+        t2 = std::numeric_limits<double>::infinity();
+    }
+    
+    double t3;
+    if (dot(n3, php) > 0) {
+        t3 = (dot(n3, f) + s/2 - dot(n3, phr)) / dot(n3, php);
+    } else if (dot(n3, php) < 0) {
+        t3 = (dot(n3, f) - s/2 - dot(n3, phr)) / dot(n3, php);
+    } else {
+        t3 = std::numeric_limits<double>::infinity();
+    }
+
+    return std::vector<double>{t1, t2, t3};
+}
+
+std::vector<double> cell_ts(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, const Spacing& s, LatticeType lattice_type) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return cell_ts_rectangle(ij, phr, php, foo, std::get<Vector2D>(s));
+    } else {
+        return cell_ts_hexagon(ij, phr, php, foo, std::get<double>(s));
+    }
 }
 
 // Calculate the new cell index in a rectangular grid based on the photon position and direction using the pre-computed (tx, ty) values
-std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const std::pair<double, double> ts, const Vector2D& php) {
+std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const std::vector<double> ts, const Vector2D& php) {
     int i = ij.first; int j = ij.second;
-    double tx = ts.first; double ty = ts.second;
+    double tx = ts[0]; double ty = ts[1];
 
     if (tx <= ty) {
         return std::make_pair(i + std::copysign(1, php.x), j);
@@ -149,8 +194,8 @@ std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const
 }
 
 // Calculate the new photon position in a rectangular grid after stepping to the nearest cell along the photon direction
-Vector2D new_photon_position_rectangle(const std::pair<double, double> ts, const Vector2D& phr, const Vector2D& php) {
-    double tx = ts.first; double ty = ts.second;
+Vector2D new_photon_position_rectangle(const std::vector<double> ts, const Vector2D& phr, const Vector2D& php) {
+    double tx = ts[0]; double ty = ts[1];
     return phr + std::min(tx, ty) * php;
 }
 
