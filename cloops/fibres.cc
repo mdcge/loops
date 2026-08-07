@@ -5,6 +5,42 @@
 #include<limits>
 #include <stdexcept>
 
+// Infer the type of lattice given by the fibre positions: rectangle or hexagon
+LatticeType infer_lattice_type(const std::vector<Vector2D>& fs) {
+    double epsilon = 0.001;
+
+    // Smallest vector with only horizontal component 
+    double hmin = std::numeric_limits<double>::infinity();
+    Vector2D hvec;
+    // Smallest vector with non-zero vertical component 
+    double vmin = std::numeric_limits<double>::infinity();
+    Vector2D vvec;
+
+    for (size_t i=0; i<fs.size(); ++i) {
+        for (size_t j=0; j<fs.size(); ++j) {
+            if (i == j) { continue; }
+
+            Vector2D d = fs[i] - fs[j];
+            double dist = d.mag();
+            if (std::abs(d.y) < epsilon) { // is vector horizontal-only?
+                if (dist < hmin) {
+                    hmin = dist;
+                    hvec = d;
+                }
+            } else { // does vector have some vertical component?
+                if (dist < vmin) {
+                    vmin = dist;
+                    vvec = d;
+                }
+            }
+        }
+    }
+
+    // Angle between shortest horizontal and part-vertical vectors: 0 if rectangular, >0 otherwise
+    double costheta = dot(hvec, vvec) / (hmin * vmin);
+    return std::abs(costheta) < 0.1 ? LatticeType::Rectangular : LatticeType::Hexagonal;
+}
+
 // Closest fibre to origin
 Vector2D Fibres::f00(const Vector2D& O) const {
     double min_dist2 = std::numeric_limits<double>::infinity();

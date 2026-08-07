@@ -11,6 +11,8 @@
 enum struct LatticeType { Rectangular, Hexagonal };
 using Spacing = std::variant<Vector2D, double>;
 
+LatticeType infer_lattice_type(const std::vector<Vector2D>&);
+
 struct Fibres {
     std::vector<Vector2D> fs;  // fibre positions [mm]
     double fr;  // fibre radius [mm]
@@ -19,10 +21,10 @@ struct Fibres {
     Spacing s;  // fibre spacing
     std::set<std::pair<int, int>> fibre_cells;  // set of cells which contain a fibre
 
-    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius, LatticeType lattice_type)
+    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius)
         : fs(fibre_positions),
           fr(fibre_radius),
-          lattice_type(lattice_type),
+          lattice_type(infer_lattice_type(fibre_positions)),
           s(lattice_type == LatticeType::Rectangular
                 ? Spacing(spacing_rectangle())
                 : Spacing(spacing_hexagon()))
