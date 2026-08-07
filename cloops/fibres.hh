@@ -41,6 +41,9 @@ struct Fibres {
     void build_fibre_cells_hexagon(const Vector2D&, const Vector2D&, double);
 };
 
+std::pair<int, int> cell_index(const Vector2D&, const Vector2D&, const Spacing&, const Vector2D&, LatticeType);
+
+// Grid-specific functions
 std::pair<int, int> cell_index_rectangle(const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);
 std::pair<int, int> cell_index_hexagon(const Vector2D&, const Vector2D&, double, const Vector2D&);
 std::pair<double, double> cell_ts_rectangle(const std::pair<int, int>, const Vector2D&, const Vector2D&, const Vector2D&, const Vector2D&);

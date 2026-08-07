@@ -191,3 +191,11 @@ std::pair<int, int> cell_index_hexagon(const Vector2D& r, const Vector2D& O, dou
     } // no need for `sc = -(qc + rc)` as it's never used
     return std::make_pair(qc, rc);
 }
+
+std::pair<int, int> cell_index(const Vector2D& r, const Vector2D& O, const Spacing& s, const Vector2D& foo, LatticeType lattice_type) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return cell_index_rectangle(r, O, std::get<Vector2D>(s), foo);
+    } else {
+        return cell_index_hexagon(r, O, std::get<double>(s), foo);
+    }
+}

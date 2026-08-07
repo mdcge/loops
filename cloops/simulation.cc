@@ -48,7 +48,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         Vector2D photon_r_2d(photon.r.x, photon.r.y);
         Vector2D photon_p_2d(photon.p.x, photon.p.y);
         // Calculate initial cell index (i0, j0)
-        std::pair<int, int> ij = cell_index_rectangle(Vector2D(photon.r.x, photon.r.y), Vector2D(detector.O().x, detector.O().y), s, foo);
+        std::pair<int, int> ij = cell_index(Vector2D(photon.r.x, photon.r.y), Vector2D(detector.O().x, detector.O().y), fibres.s, fibres.foo, fibres.lattice_type);
         int ci = ij.first; int cj = ij.second;
         // Voxel traversal state variables
         double voxel_traversal_distance = 0.0;  // how far have we travelled in the grid while searching for fibre intersection
