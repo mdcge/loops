@@ -55,7 +55,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
         while (voxel_traversal_distance < max_interaction_distance) {
             // Distance to exit current cell `t`
-            std::vector<double> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
+            std::array<double, 3> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
             double cell_exit_distance = *std::min_element(ts.begin(), ts.end());
 
             // Distance to fibre in this cell (infinity if no intersection)
