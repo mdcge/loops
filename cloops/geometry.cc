@@ -11,22 +11,7 @@ double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
     Vector point = x - O;  // "local" point accounting for detector origin
 
     // Side wall: solve 2D case
-    //     |point.xy + t * d.xy|^2 = r^2
-    // =>  point.xy^2 + d.xy^2 * t^2 + 2 * point.xy * d.xy * t = r^2
-    // =>  d.xy^2 * t^2  +  2 * point.xy * d.xy * t  +  point.xy^2 - r^2  =  0
-    // =>     a   * t^2  +            b         * t  +            c       =  0
-    // =>  t = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
-    // for t
-    double t_side = std::numeric_limits<double>::infinity();
-    double a = 1.0 - d.z*d.z;  // = d.x*d.x + d.y*d.y because d is unit
-    if (a > 0.0) { // if a == 0, it's a purely axial photon: skip side wall check
-        double b = 2.0 * (point.x*d.x + point.y*d.y);
-        double c = point.x*point.x + point.y*point.y - r*r;
-        double discriminant = b*b - 4*a*c;
-        if (discriminant >= 0.0) { // if discriminant gives valid solutions
-            t_side = (-b + std::sqrt(discriminant)) / (2*a);
-        }
-    }
+    double t_side = circle_intersection_distance(Vector2D(point.x, point.y), Vector2D(d.x, d.y), Vector2D(0.0, 0.0), r); // O = (0, 0) because `point` already corrects for detector origin
 
     // Caps: solve
     // point.z + t * d.z = +-z
