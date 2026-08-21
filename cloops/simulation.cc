@@ -30,16 +30,16 @@ void Simulation::propagate_photon(Photon& photon, double d, double n) {
 // Track a single photon, from creation to absorption
 void Simulation::track_photon(Photon& photon, int max_steps) {
     // === INITIALISATION ===
-    double absorption_distance = sample_length(params.absorption_length.at(photon.wl), rng);  // sample absorption distance
-    double refractive_index = params.refractive_index.at(photon.wl);  // look up refractive index at this wavelength
-    double mean_scattering_length = params.scattering_length.at(photon.wl);  // look up mean scattering length at this wavelength
+    double scint_absorption_distance = sample_length(params.scintillator_absorption_length.at(photon.wl), rng);  // sample scintillator absorption distance
+    double scint_refractive_index = params.scintillator_refractive_index.at(photon.wl);  // look up scintillator refractive index at this wavelength
+    double mean_scattering_length = params.scintillator_scattering_length.at(photon.wl);  // look up mean scintillator scattering length at this wavelength
     
     // === LOOP ===
     for (int i=0; i<max_steps; i++) {
         
         double scattering_distance = sample_length(mean_scattering_length, rng);  // sample scattering length for this step
         double intersection_distance = detector.intersection_distance(photon.r, photon.p);  // calculate minimum distance to detector walls
-        double max_interaction_distance = std::min({scattering_distance, absorption_distance, intersection_distance});  // maximum distance needed to be checked for fibre intersections
+        double max_interaction_distance = std::min({scattering_distance, scint_absorption_distance, intersection_distance});  // maximum distance needed to be checked for fibre intersections
 
         // === VOXEL TRAVERSAL ===
         // Photon properties for voxel traversal
@@ -82,18 +82,17 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         }
 
         // === INTERACTION TYPE ===
-        if (fibre_hit) { // if fibre is hit, break out of loop 
-            propagate_photon(photon, voxel_traversal_distance, refractive_index);
+        if (fibre_hit) { // if fibre is hit, enter fibre interaction simulation
+            propagate_photon(photon, voxel_traversal_distance, scint_refractive_index);
+        } else if (scint_absorption_distance < scattering_distance && scint_absorption_distance < intersection_distance) {  // if absorption happens first, break out of the loop
+            propagate_photon(photon, scint_absorption_distance, scint_refractive_index);
             break;
-        } else if (absorption_distance < scattering_distance && absorption_distance < intersection_distance) {  // if absorption happens first, break out of the loop
-            propagate_photon(photon, absorption_distance, refractive_index);
-            break;
-        } else if (scattering_distance < absorption_distance && scattering_distance < intersection_distance) {  // if scattering happens first, propagate the photon and resample direction
-            absorption_distance -= scattering_distance;
-            propagate_photon(photon, scattering_distance, refractive_index);
+        } else if (scattering_distance < scint_absorption_distance && scattering_distance < intersection_distance) {  // if scattering happens first, propagate the photon and resample direction
+            scint_absorption_distance -= scattering_distance;
+            propagate_photon(photon, scattering_distance, scint_refractive_index);
             photon.p = sample_direction(rng);
         } else {  // if intersection happens first, break out of loop
-            propagate_photon(photon, intersection_distance, refractive_index);
+            propagate_photon(photon, intersection_distance, scint_refractive_index);
             break;
         }
     }
