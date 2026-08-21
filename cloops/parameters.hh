@@ -19,25 +19,31 @@ struct OpticalProperty {
 
 struct Parameters {
     OpticalProperty emission_spectrum;  // emission spectrum of the scintillator [nm] -> [1]
-    OpticalProperty scattering_length;  // scattering length of the medium [nm] -> [mm]
-    OpticalProperty absorption_length;  // absorption length of the medium [nm] -> [mm]
-    OpticalProperty refractive_index;  // refractive index of the medium [nm] -> [1]
+    OpticalProperty scintillator_scattering_length;  // scattering length of the scintillator [nm] -> [mm]
+    OpticalProperty scintillator_absorption_length;  // absorption length of the scintillator [nm] -> [mm]
+    OpticalProperty fibre_absorption_length;  // absorption length of the fibres [nm] -> [mm]
+    OpticalProperty scintillator_refractive_index;  // refractive index of the scintillator [nm] -> [1]
+    OpticalProperty fibre_refractive_index;  // refractive index of the fibres [nm] -> [1]
     double scint_rise_time;  // scintillation rise time [ns]
     std::vector<double> scint_time_cnsts;  // scintillation time constants (used in exponential decay) [ns]
     std::vector<double> scint_time_amps;  // relative amplitude of each scintillation time constant
 
     Parameters(
         OpticalProperty emission_spectrum,
-        OpticalProperty scattering_length,
-        OpticalProperty absorption_length,
-        OpticalProperty refractive_index,
+        OpticalProperty scintillator_scattering_length,
+        OpticalProperty scintillator_absorption_length,
+        OpticalProperty fibre_absorption_length,
+        OpticalProperty scintillator_refractive_index,
+        OpticalProperty fibre_refractive_index,
         double scintillation_rise_time,
         std::vector<double> scintillation_time_constants,
         std::vector<double> scintillation_time_amplitudes
     ) : emission_spectrum(emission_spectrum),
-        scattering_length(scattering_length),
-        absorption_length(absorption_length),
-        refractive_index(refractive_index),
+        scintillator_scattering_length(scintillator_scattering_length),
+        scintillator_absorption_length(scintillator_absorption_length),
+        fibre_absorption_length(fibre_absorption_length),
+        scintillator_refractive_index(scintillator_refractive_index),
+        fibre_refractive_index(fibre_refractive_index),
         scint_rise_time(scintillation_rise_time),
         scint_time_cnsts(scintillation_time_constants),
         scint_time_amps(scintillation_time_amplitudes) {}
