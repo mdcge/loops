@@ -55,6 +55,11 @@ inline Vector& operator*=(Vector& v, double s) {
     return v;
 }
 
+inline Vector operator/(const Vector& v, double s) {
+    double s_inv = 1/s;
+    return s_inv * v;
+}
+
 
 // 2D vector
 struct Vector2D {
@@ -105,6 +110,11 @@ inline Vector2D operator*(const Vector2D& v, double s) {
 inline Vector2D& operator*=(Vector2D& v, double s) {
     v.x *= s; v.y *= s;
     return v;
+}
+
+inline Vector2D operator/(const Vector2D& v, double s) {
+    double s_inv = 1/s;
+    return s_inv * v;
 }
 
 #endif // VECTOR_H_
