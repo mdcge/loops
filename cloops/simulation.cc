@@ -116,13 +116,14 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         bool fibre_hit = false;  // have we hit a fibre?
 
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
+        Vector2D fibre_centre;
         while (voxel_traversal_distance < max_interaction_distance) {
             // Distance to exit current cell `t`
             std::array<double, 3> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
             double cell_exit_distance = *std::min_element(ts.begin(), ts.end());
 
             // Distance to fibre in this cell (infinity if no intersection)
-            Vector2D fibre_centre = fibres.fij(fibres.foo, ci, cj);
+            fibre_centre = fibres.fij(fibres.foo, ci, cj);
             bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
             
             // Only continue with checks if cell has a fibre
@@ -147,6 +148,10 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         // === INTERACTION TYPE ===
         if (fibre_hit) { // if fibre is hit, enter fibre interaction simulation
             propagate_photon(photon, voxel_traversal_distance, scint_refractive_index);
+            bool absorbed = interact_photon_on_fibre(photon, fibre_centre, fibres.fr, scint_refractive_index, fibre_refractive_index);
+            if (absorbed) { // if photon was absorbed in fibre, break out of loop
+                break;
+            }
         } else if (scint_absorption_distance < scattering_distance && scint_absorption_distance < intersection_distance) {  // if absorption happens first, break out of the loop
             propagate_photon(photon, scint_absorption_distance, scint_refractive_index);
             break;
