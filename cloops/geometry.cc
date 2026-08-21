@@ -80,7 +80,7 @@ double circle_intersection_distance(const Vector2D& r, const Vector2D& p, const 
     // =>  r^2 + p^2 * t^2 + 2 * r * p * t = cr^2
     // =>  p^2 * t^2  +  2 * r * p * t  +  r^2 - cr^2  =  0
     // =>   a  * t^2  +      b     * t  +      c       =  0
-    // =>  t = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
+    // =>  t = (-b +- sqrt(b^2 - 4*a*c)) / (2*a)
     // for t
     double a = p.x * p.x + p.y * p.y;
     double b = 2 * (point.x * p.x + point.y * p.y);
@@ -88,11 +88,18 @@ double circle_intersection_distance(const Vector2D& r, const Vector2D& p, const 
     double discriminant = b*b - 4*a*c;
     if (discriminant < 0.0) { // if discriminant not valid, return infinity
         return std::numeric_limits<double>::infinity();
-    } else { // if discriminant is valid, pick `t` value corresponding to entering distance (assume r outside circle)
-        double t = (-b - std::sqrt(discriminant)) / (2 * a);
-        if (t < 0.0) {
-            return std::numeric_limits<double>::infinity();
-        }
-        return t;
     }
+    double sqrt_discriminant = std::sqrt(discriminant);
+    
+    double t1 = (-b - std::sqrt(discriminant)) / (2 * a); // for ray starting outside circle
+    if (t1 >= 0.0) { // if t1 >= 0, then ray started outside circle
+        return t1;
+    }
+
+    double t2 = (-b + std::sqrt(discriminant)) / (2 * a); // for ray starting inside circle
+    if (t2 >= 0.0) { // if t2 >= 0, then ray started inside circle
+        return t2;
+    }
+
+    return std::numeric_limits<double>::infinity(); // if neither t1 or t2 are positive, then ray never intersects circle
 }
