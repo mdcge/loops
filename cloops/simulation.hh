@@ -36,6 +36,7 @@ struct Simulation {
     Photon generate_photon(Vector);
     void track_photon(Photon&, int);
     void propagate_photon(Photon&, double, double);
+    bool interact_photon_on_fibre(Photon&, Vector2D&, double, double, double);
 };
 
 #endif // SIMULATION_H_

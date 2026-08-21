@@ -2,6 +2,7 @@
 
 #include "geometry.hh"
 
+#include <cmath>
 #include <algorithm>
 
 const double C = 299.8;  // mm/ns
@@ -27,11 +28,73 @@ void Simulation::propagate_photon(Photon& photon, double d, double n) {
     photon.t += d * n * C_INV;
 }
 
+// Interact the photon with the fibre until it exits the fibre
+// Return `true` if photon absorbed (in fibre), `false` if photon still alive and in scintillator
+bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double fr, double n_scint, double n_fibre) {
+    const double EPSILON = 0.0001; // for nudging photon away from fibre edge
+
+    // Track whether photon is inside or outside fibre
+    bool in_fibre = false;
+
+    // Initialise uniform number generator
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+
+    // Sample fibre absorption length at this photon wavelength
+    double fibre_absorption_length = params.fibre_absorption_length.at(photon.wl);
+
+    while (true) {
+        // Normal vector
+        Vector2D n0 = (Vector2D(photon.r.x, photon.r.y) - fc).norm();
+        Vector2D n2d = -std::copysign(1.0, dot(Vector2D(photon.p.x, photon.p.y), n0)) * n0;
+        Vector n(n2d.x, n2d.y, 0.0);
+
+        // Reflection/refraction coefficients
+        double n1 = in_fibre ? n_fibre : n_scint;
+        double n2 = in_fibre ? n_scint : n_fibre;
+        double eta = n1 / n2;
+        double costheta1 = -dot(photon.p, n);
+        double k = 1 - eta*eta * (1 - costheta1*costheta1);
+        double R0 = std::pow((n_scint - n_fibre) / (n_scint + n_fibre), 2);  // reflectance at normal incidence
+        double R = R0 + (1 - R0) * std::pow(1 - costheta1, 5);  // reflection probability (Schlick approximation)
+
+        double u = uniform(rng);
+        if ((k < 0) || (u < R)) { // reflection (TIR or Fresnel)
+            photon.p += 2 * costheta1 * n;
+            photon.p = photon.p.norm();  // guard against floating point drift
+            photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
+        } else { // refraction
+            photon.p += (eta - 1) * photon.p + (eta * costheta1 - std::sqrt(k)) * n;
+            photon.p = photon.p.norm();  // guard against floating point drift
+            photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
+            in_fibre = !in_fibre;  // refraction changes in <-> out of fibre state
+        }
+
+        // Exit to main loop if photon outside of fibre
+        // Return `false` because photon is still alive
+        if (!in_fibre) {
+            return false;
+        }
+
+        // Propagate inside fibre
+        double fibre_absorption_distance = sample_length(fibre_absorption_length, rng);
+        double intersection_distance = circle_intersection_distance(Vector2D(photon.r.x, photon.r.y), Vector2D(photon.p.x, photon.p.y), fc, fr);
+
+        if (fibre_absorption_distance < intersection_distance) { // if photon absorbed in fibre, exit this loop and outer loop
+            propagate_photon(photon, fibre_absorption_distance, n_fibre);
+            return true; // return `true` because photon absorbed
+        }
+
+        // If photon reaches fibre edge, we're still in the fibre so allow loop to restart
+        propagate_photon(photon, intersection_distance, n_fibre);
+    }
+}
+
 // Track a single photon, from creation to absorption
 void Simulation::track_photon(Photon& photon, int max_steps) {
     // === INITIALISATION ===
     double scint_absorption_distance = sample_length(params.scintillator_absorption_length.at(photon.wl), rng);  // sample scintillator absorption distance
     double scint_refractive_index = params.scintillator_refractive_index.at(photon.wl);  // look up scintillator refractive index at this wavelength
+    double fibre_refractive_index = params.fibre_refractive_index.at(photon.wl);  // look up fibre refractive index at this wavelength
     double mean_scattering_length = params.scintillator_scattering_length.at(photon.wl);  // look up mean scintillator scattering length at this wavelength
     
     // === LOOP ===
