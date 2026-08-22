@@ -11,7 +11,7 @@ double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {
     Vector point = x - O;  // "local" point accounting for detector origin
 
     // Side wall: solve 2D case
-    double t_side = circle_intersection_distance(Vector2D(point.x, point.y), Vector2D(d.x, d.y), Vector2D(0.0, 0.0), r); // O = (0, 0) because `point` already corrects for detector origin
+    double t_side = circle_intersection_distance(Vector2D(x.x, x.y), Vector2D(d.x, d.y), Vector2D(0.0, 0.0), r); // O = (0, 0) because `point` already corrects for detector origin
 
     // Caps: solve
     // point.z + t * d.z = +-z
