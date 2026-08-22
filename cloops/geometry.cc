@@ -76,12 +76,12 @@ double circle_intersection_distance(const Vector2D& r, const Vector2D& p, const 
     }
     double sqrt_discriminant = std::sqrt(discriminant);
     
-    double t1 = (-b - std::sqrt(discriminant)) / (2 * a); // for ray starting outside circle
+    double t1 = (-b - sqrt_discriminant) / (2 * a); // for ray starting outside circle
     if (t1 >= 0.0) { // if t1 >= 0, then ray started outside circle
         return t1;
     }
 
-    double t2 = (-b + std::sqrt(discriminant)) / (2 * a); // for ray starting inside circle
+    double t2 = (-b + sqrt_discriminant) / (2 * a); // for ray starting inside circle
     if (t2 >= 0.0) { // if t2 >= 0, then ray started inside circle
         return t2;
     }
