@@ -58,6 +58,7 @@ double Detector::intersection_distance(const Vector& x, const Vector& d) const {
 }
 
 // Calculate intersection distance from `r` to circle of centre `C` and radius `cr` along `p`
+// Always returns positive distance
 double circle_intersection_distance(const Vector2D& r, const Vector2D& p, const Vector2D& C, double cr) {
     Vector2D point = r - C;  // "local" point accounting for circle centre
     // Solve:

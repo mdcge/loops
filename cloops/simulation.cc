@@ -31,61 +31,66 @@ void Simulation::propagate_photon(Photon& photon, double d, double n) {
 // Interact the photon with the fibre until it exits the fibre
 // Return `true` if photon absorbed (in fibre), `false` if photon still alive and in scintillator
 bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double fr, double n_scint, double n_fibre) {
-    const double EPSILON = 0.0001; // for nudging photon away from fibre edge
-
-    // Track whether photon is inside or outside fibre
-    bool in_fibre = false;
+    const double EPSILON = 1e-6; // for nudging photon away from fibre edge
 
     // Initialise uniform number generator
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
-
+    
     // Sample fibre absorption length at this photon wavelength
     double fibre_absorption_length = params.fibre_absorption_length.at(photon.wl);
 
-    while (true) {
-        // Normal vector
-        Vector2D n0 = (Vector2D(photon.r.x, photon.r.y) - fc).norm();
-        Vector2D n2d = -std::copysign(1.0, dot(Vector2D(photon.p.x, photon.p.y), n0)) * n0;
-        Vector n(n2d.x, n2d.y, 0.0);
+    // Compute necessary parameters
+    double R0 = ((n_scint - n_fibre) / (n_scint + n_fibre)) * ((n_scint - n_fibre) / (n_scint + n_fibre));  // reflectance at normal incidence
+    Vector2D n2d = (Vector2D(photon.r.x, photon.r.y) - fc).norm();  // 2D normal (always pointing outwards from the fibre)
+    Vector n(n2d.x, n2d.y, 0.0);  // normal
+    double eta = n_scint / n_fibre;
+    double eta_inv = n_fibre / n_scint;
+    double costheta1 = -dot(photon.p, n);
+    double costheta2 = std::sqrt(1 - eta*eta * (1 - costheta1*costheta1));
+    double Rsf = R0 + (1 - R0) * (1-costheta1) * (1-costheta1) * (1-costheta1) * (1-costheta1) * (1-costheta1);  // reflection probability in scintillator (Schlick approximation)
+    double Rfs = R0 + (1 - R0) * (1-costheta2) * (1-costheta2) * (1-costheta2) * (1-costheta2) * (1-costheta2);  // reflection probability in fibre (Schlick approximation)
 
-        // Reflection/refraction coefficients
-        double n1 = in_fibre ? n_fibre : n_scint;
-        double n2 = in_fibre ? n_scint : n_fibre;
-        double eta = n1 / n2;
-        double costheta1 = -dot(photon.p, n);
-        double k = 1 - eta*eta * (1 - costheta1*costheta1);
-        double R0 = std::pow((n_scint - n_fibre) / (n_scint + n_fibre), 2);  // reflectance at normal incidence
-        double R = R0 + (1 - R0) * std::pow(1 - costheta1, 5);  // reflection probability (Schlick approximation)
+    double u = uniform(rng);
+    if (u < Rsf) { // reflection back into scintillator
+        photon.p += 2 * costheta1 * n;
+        photon.p = photon.p.norm();  // guard againts floating point drift
+        photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
+        return false;  // return `false` because photon is still alive -> back to main simulation
+    } else { // refraction into fibre
+        // Refract photon direction
+        photon.p += (eta - 1) * photon.p + (eta * costheta1 - costheta2) * n;
+        photon.p = photon.p.norm();  // guard againts floating point drift
+        photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
 
-        double u = uniform(rng);
-        if ((k < 0) || (u < R)) { // reflection (TIR or Fresnel)
-            photon.p += 2 * costheta1 * n;
-            photon.p = photon.p.norm();  // guard against floating point drift
-            photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
-        } else { // refraction
-            photon.p += (eta - 1) * photon.p + (eta * costheta1 - std::sqrt(k)) * n;
-            photon.p = photon.p.norm();  // guard against floating point drift
-            photon.r += photon.p * EPSILON;  // nudge photon position away from fibre edge to avoid immediate re-interaction
-            in_fibre = !in_fibre;  // refraction changes in <-> out of fibre state
+        // Calculate number of inner reflections, distance to exit and absorption distance
+        double dc = circle_intersection_distance(Vector2D(photon.r.x, photon.r.y), Vector2D(photon.p.x, photon.p.y), fc, fr);  // chord length
+        int NR = std::floor(std::log(uniform(rng)) / std::log(Rfs));  // number of inner reflections
+        double fibre_exit_distance = (NR + 1) * dc;  // distance to fibre exit
+        double fibre_absorption_distance = sample_length(fibre_absorption_length, rng);  // distance to absorption in fibre
+
+        if (fibre_absorption_distance < fibre_exit_distance) { // photon absorbed in fibre
+            // Manually propagate photon (treat xy, z and t separately)
+            photon.r.x += std::fmod(fibre_absorption_distance, dc) * photon.p.x;
+            photon.r.y += std::fmod(fibre_absorption_distance, dc) * photon.p.y;
+            photon.r.z += fibre_absorption_distance * photon.p.z;
+            photon.t += n_fibre * C_INV * fibre_absorption_distance;
+            return true;  // return `true` because photon is dead -> exit main simulation
+        } else { // photon reflected until refracted out from fibre
+            // Manually propagate photon (treat xy, z and t separately)
+            photon.r.x += dc * photon.p.x;
+            photon.r.y += dc * photon.p.y;
+            photon.r.z += fibre_exit_distance * photon.p.z;
+            photon.t += n_fibre * C_INV * fibre_exit_distance;
+            
+            // Find new normal at exit position
+            n2d = (Vector2D(photon.r.x, photon.r.y) - fc).norm();  // 2D normal (always pointing outwards from the fibre)
+            n = Vector(n2d.x, n2d.y, 0.0);  // normal
+
+            // Refract photon direction
+            photon.p += (eta_inv - 1) * photon.p + (costheta1 - eta_inv * costheta2) * n;
+            photon.r += photon.p * EPSILON;
+            return false;  // return `false` because photon is still alive -> back to main simulation
         }
-
-        // Exit to main loop if photon outside of fibre
-        // Return `false` because photon is still alive
-        if (!in_fibre) {
-            return false;
-        }
-
-        // Propagate inside fibre
-        double fibre_absorption_distance = sample_length(fibre_absorption_length, rng);
-        double intersection_distance = circle_intersection_distance(Vector2D(photon.r.x, photon.r.y), Vector2D(photon.p.x, photon.p.y), fc, fr);
-
-        if (fibre_absorption_distance < intersection_distance) { // if photon absorbed in fibre, exit this loop and outer loop
-            propagate_photon(photon, fibre_absorption_distance, n_fibre);
-            return true; // return `true` because photon absorbed
-        }
-
-        // If photon reaches fibre edge, we're still in the fibre so allow loop to restart
-        propagate_photon(photon, intersection_distance, n_fibre);
     }
 }
 
