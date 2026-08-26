@@ -16,15 +16,19 @@ LatticeType infer_lattice_type(const std::vector<Vector2D>&);
 
 struct Fibres {
     std::vector<Vector2D> fs;  // fibre positions [mm]
-    double fr;  // fibre radius [mm]
+    double fr_core;  // fibre core radius [mm]
+    double fr_innerclad;  // fibre inner cladding radius [mm]
+    double fr_outerclad;  // fibre outer cladding radius [mm]
     LatticeType lattice_type;  // type of lattice: rectangular or hexagonal
     Vector2D foo;  // 2D position of "central" fibre (closest to detector origin)
     Spacing s;  // fibre spacing
     std::set<std::pair<int, int>> fibre_cells;  // set of cells which contain a fibre
 
-    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_radius)
+    Fibres(const std::vector<Vector2D>& fibre_positions, double fibre_core_radius, double fibre_innerclad_radius, double fibre_outerclad_radius)
         : fs(fibre_positions),
-          fr(fibre_radius),
+          fr_core(fibre_core_radius),
+          fr_innerclad(fibre_innerclad_radius),
+          fr_outerclad(fibre_outerclad_radius),
           lattice_type(infer_lattice_type(fibre_positions)),
           s(lattice_type == LatticeType::Rectangular
                 ? Spacing(spacing_rectangle())
