@@ -174,9 +174,11 @@ std::array<double, 3> cell_ts_rectangle(const std::pair<int, int> ij, const Vect
 
 // Given a cell (i, j) in a hexagonal grid, calculate the tx and ty distances along the photon direction `php` from the photon position `phr` needed to reach the x & y cell boundaries
 std::array<double, 3> cell_ts_hexagon(const std::pair<int, int> ij, const Vector2D& phr, const Vector2D& php, const Vector2D& foo, double s) {
-    double sqrt3 = std::sqrt(3);
+    static const double sqrt3 = std::sqrt(3);
+    static const Vector2D n1(1.0, 0.0);
+    static const Vector2D n2(0.5, sqrt3/2.0);
+    static const Vector2D n3(-0.5, sqrt3/2.0);
     int i = ij.first; int j = ij.second;
-    Vector2D n1(1.0, 0.0); Vector2D n2(0.5, sqrt3/2.0); Vector2D n3(-0.5, sqrt3/2.0);
     Vector2D f(foo.x + (i + j/2.0) * s, foo.y + (j * sqrt3/2.0) * s);
 
     double t1;
@@ -231,9 +233,11 @@ std::pair<int, int> new_cell_index_rectangle(const std::pair<int, int> ij, const
 
 // Calculate the new cell index in a hexagonal grid based on the photon position and direction using the pre-computed (tx, ty) values
 std::pair<int, int> new_cell_index_hexagon(const std::pair<int, int> ij, const std::array<double, 3>& ts, const Vector2D& php) {
-    double sqrt3 = std::sqrt(3);
+    static const double sqrt3 = std::sqrt(3);
+    static const Vector2D n1(1.0, 0.0);
+    static const Vector2D n2(0.5, sqrt3/2.0);
+    static const Vector2D n3(-0.5, sqrt3/2.0);
     int i = ij.first; int j = ij.second;
-    Vector2D n1(1.0, 0.0); Vector2D n2(0.5, sqrt3/2.0); Vector2D n3(-0.5, sqrt3/2.0);
     double t1 = ts[0]; double t2 = ts[1]; double t3 = ts[2];
 
     if (t1 <= t2 && t1 <= t3) {
