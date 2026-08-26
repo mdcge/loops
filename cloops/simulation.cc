@@ -69,8 +69,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     double R_oc_ic = fresnel_reflectance(n_outerclad, n_innerclad, costhetaoc, costhetaic);
     double R_ic_f = fresnel_reflectance(n_innerclad, n_fibre, costhetaic, costhetaf);
     double Reff_s_ic = R_s_oc + (1 - R_s_oc) * (1 - R_s_oc) * (R_oc_ic / (1 - R_s_oc * R_oc_ic));
-    double Reff_s_f = Reff_s_ic + (1 - Reff_s_ic) * (1 - Reff_s_ic) * (R_ic_f / (1 - Reff_s_ic * R_ic_f));
-    // std::cout << "Reff_s_f: " << Reff_s_f << std::endl;
+    double Reff_s_f = Reff_s_ic + (1 - Reff_s_ic) * (1 - Reff_s_ic) * (R_ic_f / (1 - Reff_s_ic * R_ic_f));    
     // Non-TIR reflection back into scintillator or refraction into fibre?
     double u = uniform(rng);
     if (u < Reff_s_f) { // non-TIR reflection back into scintillator
@@ -108,10 +107,9 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     }
 
     // Refraction out to scintillator
-    double distance_along_chord = std::fmod(fibre_exit_distance, dc);
     // Update position
-    photon.r.x += distance_along_chord * photon.p.x;
-    photon.r.y += distance_along_chord * photon.p.y;
+    photon.r.x += dc * photon.p.x;
+    photon.r.y += dc * photon.p.y;
     photon.r.z += fibre_exit_distance * photon.p.z;
     // Normal at exit point of fibre
     Vector2D n2d_in = (Vector2D(photon.r.x, photon.r.y) - fc).norm();  // 2D normal (always pointing outwards from the fibre)
