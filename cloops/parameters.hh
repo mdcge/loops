@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "vector.hh"
+#include "xoshiro.hh"
 
 // Pair of wavelength and value arrays
 struct OpticalProperty {
@@ -55,7 +56,7 @@ struct Parameters {
         scint_time_amps(scintillation_time_amplitudes) {}
 };
 
-double sample_length(double, std::mt19937_64&);
-Vector sample_direction(std::mt19937_64&);
+double sample_length(double, xoshiro256pp&);
+Vector sample_direction(xoshiro256pp&);
 
 #endif // PARAMETERS_H_

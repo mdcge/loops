@@ -7,12 +7,13 @@
 #include "photon.hh"
 #include "geometry.hh"
 #include "fibres.hh"
+#include "xoshiro.hh"
 
 struct Simulation {
     Parameters params;  // simulation parameters
     Detector detector;  // detector geometry
     Fibres fibres;  // fibres
-    std::mt19937_64 rng;  // random number generator
+    xoshiro256pp rng;  // random number generator
     std::discrete_distribution<> emission_spectrum_distribution;  // emission spectrum distribution for sampling photon wavelengths
     std::discrete_distribution<> scintillation_component_distribution;  // weighted distribution of scintillation time components
 

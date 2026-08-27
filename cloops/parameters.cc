@@ -23,14 +23,14 @@ double OpticalProperty::at(double wavelength) const {
 
 // === General ===
 
-double sample_length(double lambda, std::mt19937_64& rng)  {
+double sample_length(double lambda, xoshiro256pp& rng)  {
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
     double u = uniform(rng);
     return -lambda * std::log(u);
 }
 
 // Sample direction isotropically
-Vector sample_direction(std::mt19937_64& rng) {
+Vector sample_direction(xoshiro256pp& rng) {
     std::uniform_real_distribution<double> uniform(-1.0, 1.0);
     double x1, x2, s;
     do {
