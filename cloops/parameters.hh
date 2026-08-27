@@ -55,7 +55,7 @@ struct Parameters {
         scint_time_amps(scintillation_time_amplitudes) {}
 };
 
-double sample_length(double, std::mt19937&);
-Vector sample_direction(std::mt19937&);
+double sample_length(double, std::mt19937_64&);
+Vector sample_direction(std::mt19937_64&);
 
 #endif // PARAMETERS_H_
