@@ -134,6 +134,10 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
     double fibre_inner_cladding_refractive_index = params.fibre_inner_cladding_refractive_index.at(photon.wl);  // look up fibre inner cladding refractive index at this wavelength
     double fibre_outer_cladding_refractive_index = params.fibre_outer_cladding_refractive_index.at(photon.wl);  // look up fibre outer cladding refractive index at this wavelength
     double mean_scattering_length = params.scintillator_scattering_length.at(photon.wl);  // look up mean scintillator scattering length at this wavelength
+
+    // Setup variables to avoid re-computing cell index when exiting fibre
+    bool photon_fibre_to_scintillator = false; 
+    int last_ci = 0; int last_cj = 0;
     
     // === LOOP ===
     for (int i=0; i<max_steps; i++) {
@@ -147,14 +151,22 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         Vector2D photon_r_2d(photon.r.x, photon.r.y);
         Vector2D photon_p_2d(photon.p.x, photon.p.y);
         // Calculate initial cell index (i0, j0)
-        std::pair<int, int> ij = cell_index(Vector2D(photon.r.x, photon.r.y), fibres.s, fibres.foo, fibres.lattice_type);
-        int ci = ij.first; int cj = ij.second;
+        // If exiting fibre, just reuse fibre entry cell index
+        int ci, cj;
+        if (photon_fibre_to_scintillator) {
+            ci = last_ci;
+            cj = last_cj;
+        } else {
+            std::pair<int, int> ij = cell_index(Vector2D(photon.r.x, photon.r.y), fibres.s, fibres.foo, fibres.lattice_type);
+            ci = ij.first; cj = ij.second;
+        }
         // Voxel traversal state variables
         double voxel_traversal_distance = 0.0;  // how far have we travelled in the grid while searching for fibre intersection
         bool fibre_hit = false;  // have we hit a fibre?
 
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
         Vector2D fibre_centre;
+        bool first_cell_in_step = true; // is this the first cell in this step?
         while (voxel_traversal_distance < max_interaction_distance) {
             // Distance to exit current cell `t`
             std::array<double, 3> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
@@ -163,9 +175,15 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             // Distance to fibre in this cell (infinity if no intersection)
             fibre_centre = fibres.fij(fibres.foo, ci, cj);
             bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
+
+            // Skip this fibre check if
+            //     - the photon has been reflected/refracted back into scintillator from the fibre -> `photon_fibre_to_scintillator` == true
+            //     AND
+            //     - this is the first cell in voxel traversal -> `first_cell_in_step` == true
+            bool skip_this_fibre = photon_fibre_to_scintillator && first_cell_in_step;
             
-            // Only continue with checks if cell has a fibre
-            if (cell_has_fibre) {
+            // Only continue with checks if cell has a fibre AND we're not still same cell (after fibre exit)
+            if (cell_has_fibre && !skip_this_fibre) {
                 double fibre_distance = circle_intersection_distance(photon_r_2d, photon_p_2d, fibre_centre, fibres.fr_outerclad);
 
                 if ((voxel_traversal_distance + fibre_distance) < max_interaction_distance) { // if fibre intersection happens before other processes, set `fibre_hit` flag to true and exit loop
@@ -181,7 +199,10 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             ci = new_ij.first;
             cj = new_ij.second;
             photon_r_2d = new_photon_position(ts, photon_r_2d, photon_p_2d, fibres.lattice_type);
+            first_cell_in_step = false; // any subsequent cells must be checked properly
         }
+        // Reset to `false` by default: only photons exiting fibres can set to `true`
+        photon_fibre_to_scintillator = false;
 
         // === INTERACTION TYPE ===
         if (fibre_hit) { // if fibre is hit, enter fibre interaction simulation
@@ -190,6 +211,10 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             if (absorbed) { // if photon was absorbed in fibre, break out of loop
                 break;
             }
+            // Record fibre entry/exit cell and set flag to `true`
+            photon_fibre_to_scintillator = true;
+            last_ci = ci;
+            last_cj = cj;
         } else if (scint_absorption_distance < scattering_distance && scint_absorption_distance < intersection_distance) {  // if absorption happens first, break out of the loop
             propagate_photon(photon, scint_absorption_distance, scint_refractive_index);
             break;
