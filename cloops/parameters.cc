@@ -31,15 +31,18 @@ double sample_length(double lambda, std::mt19937_64& rng)  {
 
 // Sample direction isotropically
 Vector sample_direction(std::mt19937_64& rng) {
-    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    std::uniform_real_distribution<double> uniform(-1.0, 1.0);
+    double x1, x2, s;
+    do {
+        x1 = uniform(rng);
+        x2 = uniform(rng);
+        s = x1*x1 + x2*x2;
+    } while (s >= 1.0);   // rejection: keep points inside the unit disk (~78.5% acceptance)
 
-    double cos_theta = 2.0 * uniform(rng) - 1.0;  // uniform in [-1, 1]
-    double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
-    double phi = 2.0 * M_PI * uniform(rng);  // uniform in [0, 2pi]
-
+    double factor = 2.0 * std::sqrt(1.0 - s);
     return Vector(
-        sin_theta * std::cos(phi),
-        sin_theta * std::sin(phi),
-        cos_theta
+        x1 * factor,
+        x2 * factor,
+        1.0 - 2.0*s
     );
 }
