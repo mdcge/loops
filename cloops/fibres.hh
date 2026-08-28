@@ -63,4 +63,32 @@ std::array<double, 3> cell_ts_hexagon(const std::pair<int, int>, const Vector2D&
 Vector2D new_photon_position_rectangle(const std::array<double, 3>&, const Vector2D&, const Vector2D&);
 Vector2D new_photon_position_hexagon(const std::array<double, 3>&, const Vector2D&, const Vector2D&);
 
+
+// DDA state objects
+struct HexDDAState {
+    double inv_dot1, inv_dot2, inv_dot3;  // 1 / (n_k . pip), compute once instead of for every cell
+    double dt1, dt2, dt3;  // t increment for crossing a full cell in each direction
+    double di1, dj1, di2, dj2, di3, dj3;  // index change when crossing cell boundary in each direction
+    int bsign1, bsign2, bsign3;  // sign of n_k . php, i.e. direction of boundary crossing
+};
+
+struct RectDDAState {
+    double inv_dotx, inv_doty;  // 1 / (n_k . pip), compute once instead of for every cell
+    double dtx, dty;  // t increment for crossing a full cell in each direction
+    double di, dj;  // index change when crossing cell boundary in each direction
+};
+
+using DDAState = std::variant<RectDDAState, HexDDAState>;
+
+DDAState make_dda_state(const Vector2D&, const Spacing&, LatticeType);
+std::array<double, 3> initial_ts(const std::pair<int, int>&, const Vector2D&, const Vector2D&, const Spacing&, LatticeType, const DDAState&);
+std::pair<int, int> dda_step(std::array<double, 3>&, const DDAState&, double&);
+
+RectDDAState make_dda_state_rectangle(const Vector2D&, const Vector2D& s);
+HexDDAState make_dda_state_hexagon(const Vector2D&, double s);
+std::array<double, 3> initial_ts_rectangle(const std::pair<int, int>&, const Vector2D&, const Vector2D&, const Vector2D&, const RectDDAState&);
+std::array<double, 3> initial_ts_hexagon(const std::pair<int, int>&, const Vector2D&, const Vector2D&, double, const HexDDAState&);
+std::pair<int, int> dda_step_rectangle(std::array<double, 3>&, const RectDDAState&, double&);
+std::pair<int, int> dda_step_hexagon(std::array<double, 3>&, const HexDDAState&, double&);
+
 #endif // FIBRES_H_

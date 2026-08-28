@@ -148,7 +148,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
 
         // === VOXEL TRAVERSAL ===
         // Photon properties for voxel traversal
-        Vector2D photon_r_2d(photon.r.x, photon.r.y);
+        Vector2D X0(photon.r.x, photon.r.y);
         Vector2D photon_p_2d(photon.p.x, photon.p.y);
         // Calculate initial cell index (i0, j0)
         // If exiting fibre, just reuse fibre entry cell index
@@ -160,20 +160,19 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             std::pair<int, int> ij = cell_index(Vector2D(photon.r.x, photon.r.y), fibres.s, fibres.foo, fibres.lattice_type);
             ci = ij.first; cj = ij.second;
         }
-        // Voxel traversal state variables
+        // Voxel traversal state
+        DDAState dda_state = make_dda_state(photon_p_2d, fibres.s, fibres.lattice_type);
+        std::array<double, 3> ts = initial_ts(std::make_pair(ci, cj), X0, fibres.foo, fibres.s, fibres.lattice_type, dda_state);
+
+        double t_entry = 0.0;  // distance from photon position at start of ray cast to entry point of current cell
         double voxel_traversal_distance = 0.0;  // how far have we travelled in the grid while searching for fibre intersection
         bool fibre_hit = false;  // have we hit a fibre?
 
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
         Vector2D fibre_centre;
         bool first_cell_in_step = true; // is this the first cell in this step?
-        while (voxel_traversal_distance < max_interaction_distance) {
-            // Distance to exit current cell `t`
-            std::array<double, 3> ts = cell_ts(std::make_pair(ci, cj), photon_r_2d, photon_p_2d, fibres.foo, fibres.s, fibres.lattice_type);
-            double cell_exit_distance = *std::min_element(ts.begin(), ts.end());
-
-            // Distance to fibre in this cell (infinity if no intersection)
-            fibre_centre = fibres.fij(fibres.foo, ci, cj);
+        while (t_entry < max_interaction_distance) {
+            // Does this cell contain a fibre?
             bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
 
             // Skip this fibre check if
@@ -184,22 +183,24 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             
             // Only continue with checks if cell has a fibre AND we're not still same cell (after fibre exit)
             if (cell_has_fibre && !skip_this_fibre) {
-                double fibre_distance = circle_intersection_distance(photon_r_2d, photon_p_2d, fibre_centre, fibres.fr_outerclad);
+                fibre_centre = fibres.fij(fibres.foo, ci, cj);  // fibre position in this cell
+                Vector2D r_entry(X0.x + t_entry * photon_p_2d.x, X0.y + t_entry * photon_p_2d.y);  // position of photon at entrance of current cell
+                double fibre_distance = circle_intersection_distance(r_entry, photon_p_2d, fibre_centre, fibres.fr_outerclad);
 
-                if ((voxel_traversal_distance + fibre_distance) < max_interaction_distance) { // if fibre intersection happens before other processes, set `fibre_hit` flag to true and exit loop
+                if ((t_entry + fibre_distance) < max_interaction_distance) { // if fibre intersection happens before other processes, set `fibre_hit` flag to true and exit loop
                     fibre_hit = true;
-                    voxel_traversal_distance += fibre_distance;
+                    voxel_traversal_distance = t_entry + fibre_distance;
                     break;
                 }
             }
 
-            // If no fibre intersection in this cell or no fibre in this cell, increment total distance and step to next cell, updating cell indices and photon position
-            voxel_traversal_distance += cell_exit_distance;
-            std::pair<int, int> new_ij = new_cell_index(std::make_pair(ci, cj), ts, photon_p_2d, fibres.lattice_type);
-            ci = new_ij.first;
-            cj = new_ij.second;
-            photon_r_2d = new_photon_position(ts, photon_r_2d, photon_p_2d, fibres.lattice_type);
-            first_cell_in_step = false; // any subsequent cells must be checked properly
+            // If no fibre intersection in this cell or no fibre in this cell, increment total distance and step to next cell, updating cell indices
+            double t_exit;
+            std::pair<int, int> cell_index_steps = dda_step(ts, dda_state, t_exit);
+            ci += cell_index_steps.first;
+            cj += cell_index_steps.second;
+            t_entry = t_exit;
+            first_cell_in_step = false;
         }
         // Reset to `false` by default: only photons exiting fibres can set to `true`
         photon_fibre_to_scintillator = false;

@@ -320,3 +320,130 @@ std::pair<int, int> cell_index(const Vector2D& r, const Spacing& s, const Vector
         return cell_index_hexagon(r, std::get<double>(s), foo);
     }
 }
+
+
+// DDA state functions
+
+RectDDAState make_dda_state_rectangle(const Vector2D& php, const Vector2D& s) {
+    RectDDAState state;
+    // Inverse dot products with each direction eigenvector
+    state.inv_dotx = (php.x != 0.0) ? 1.0 / php.x : 0.0;
+    state.inv_doty = (php.y != 0.0) ? 1.0 / php.y : 0.0;
+    // Cell spans in each direction
+    state.dtx = (php.x != 0.0) ? s.x * std::abs(state.inv_dotx) : std::numeric_limits<double>::infinity();
+    state.dty = (php.y != 0.0) ? s.y * std::abs(state.inv_doty) : std::numeric_limits<double>::infinity();
+    // Cell index changes in each direction
+    state.di = static_cast<int>(std::copysign(1.0, php.x));
+    state.dj = static_cast<int>(std::copysign(1.0, php.y));
+
+    return state;
+}
+
+HexDDAState make_dda_state_hexagon(const Vector2D& php, double s) {
+    // Initialise constants and fixed vectors
+    double sqrt3 = std::sqrt(3);
+    Vector2D n1(1.0, 0.0), n2(0.5, sqrt3/2.0), n3(-0.5, sqrt3/2.0);
+    double dot1 = dot(n1, php); double dot2 = dot(n2, php); double dot3 = dot(n3, php);
+
+    HexDDAState state;
+    // Inverse dot products with each direction eigenvector
+    state.inv_dot1 = (dot1 != 0.0) ? 1.0 / dot1 : 0.0;
+    state.inv_dot2 = (dot2 != 0.0) ? 1.0 / dot2 : 0.0;
+    state.inv_dot3 = (dot3 != 0.0) ? 1.0 / dot3 : 0.0;
+    // Cell spans in each direction
+    state.dt1 = (dot1 != 0.0) ? s * std::abs(state.inv_dot1) : std::numeric_limits<double>::infinity();
+    state.dt2 = (dot2 != 0.0) ? s * std::abs(state.inv_dot2) : std::numeric_limits<double>::infinity();
+    state.dt3 = (dot3 != 0.0) ? s * std::abs(state.inv_dot3) : std::numeric_limits<double>::infinity();
+    // Cell index changes in each direction
+    state.di1 = static_cast<int>(std::copysign(1.0, dot1)); state.dj1 = 0; // i += 1
+    state.di2 = 0; state.dj2 = static_cast<int>(std::copysign(1.0, dot2)); // j += 1
+    state.di3 = -static_cast<int>(std::copysign(1.0, dot3)); state.dj3 = static_cast<int>(std::copysign(1.0, dot3)); // i -= 1, j += 1
+    // Boundary signs in each direction
+    state.bsign1 = static_cast<int>(std::copysign(1.0, dot1));
+    state.bsign2 = static_cast<int>(std::copysign(1.0, dot2));
+    state.bsign3 = static_cast<int>(std::copysign(1.0, dot3)); // !! `di3` = -`bsign3` !!
+
+    return state;
+}
+
+// Initialise the DDA state values: calculating the full-cell spans and the cell index changes in each direction
+// Based on photon direction `php` and fibre spacing `s`
+DDAState make_dda_state(const Vector2D& php, const Spacing& s, LatticeType lattice_type) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return make_dda_state_rectangle(php, std::get<Vector2D>(s));
+    } else {
+        return make_dda_state_hexagon(php, std::get<double>(s));
+    }
+}
+
+std::array<double, 3> initial_ts_rectangle(const std::pair<int, int>& ij, const Vector2D& phr, const Vector2D& foo, const Vector2D& s, const RectDDAState& state) {
+    // Pre-calculate necessary constants
+    int i = ij.first; int j = ij.second;
+    double fx = foo.x + i * s.x; double fy = foo.y + j * s.y;
+
+    // Distance to each cell boundary
+    double tx = (state.inv_dotx != 0.0) ? (fx + (s.x*state.di)/2.0 - phr.x) * state.inv_dotx : std::numeric_limits<double>::infinity();
+    double ty = (state.inv_doty != 0.0) ? (fy + (s.y*state.dj)/2.0 - phr.y) * state.inv_doty : std::numeric_limits<double>::infinity();
+
+    return {tx, ty, std::numeric_limits<double>::infinity()};
+}
+
+std::array<double, 3> initial_ts_hexagon(const std::pair<int, int>& ij, const Vector2D& phr, const Vector2D& foo, double s, const HexDDAState& state) {
+    // Initialise constants and fixed vectors
+    int i = ij.first; int j = ij.second;
+    double sqrt3 = std::sqrt(3);
+    Vector2D n1(1.0, 0.0), n2(0.5, sqrt3/2.0), n3(-0.5, sqrt3/2.0);
+    Vector2D f(foo.x + (i + j/2.0) * s, foo.y + (j * sqrt3/2.0) * s);
+
+    // Distance to each cell boundary
+    double t1 = (state.inv_dot1 != 0.0) ? (dot(n1, f) + (s*state.bsign1)/2.0 - dot(n1, phr)) * state.inv_dot1 : std::numeric_limits<double>::infinity();
+    double t2 = (state.inv_dot2 != 0.0) ? (dot(n2, f) + (s*state.bsign2)/2.0 - dot(n2, phr)) * state.inv_dot2 : std::numeric_limits<double>::infinity();
+    double t3 = (state.inv_dot3 != 0.0) ? (dot(n3, f) + (s*state.bsign3)/2.0 - dot(n3, phr)) * state.inv_dot3 : std::numeric_limits<double>::infinity();
+    
+    return {t1, t2, t3};
+}
+
+// Find the distance to each cell boundary for the initial point
+// Given that the point is not necessarily on the border of the cell, we can't use the precomputed dts
+std::array<double, 3> initial_ts(const std::pair<int, int>& ij, const Vector2D& phr, const Vector2D& foo, const Spacing& s, LatticeType lattice_type, const DDAState& dda_state) {
+    if (lattice_type == LatticeType::Rectangular) {
+        return initial_ts_rectangle(ij, phr, foo, std::get<Vector2D>(s), std::get<RectDDAState>(dda_state));
+    } else {
+        return initial_ts_hexagon(ij, phr, foo, std::get<double>(s), std::get<HexDDAState>(dda_state));
+    }
+}
+
+std::pair<int, int> dda_step_rectangle(std::array<double, 3>& ts, const RectDDAState& state, double& t_exit) {
+    double& tx = ts[0]; double& ty = ts[1];
+    if (tx <= ty) {
+        t_exit = tx; tx += state.dtx;
+        return {state.di, 0};
+    } else {
+        t_exit = ty; ty += state.dty;
+        return {0, state.dj};
+    }
+}
+
+std::pair<int, int> dda_step_hexagon(std::array<double, 3>& ts, const HexDDAState& state, double& t_exit) {
+    double& t1 = ts[0]; double& t2 = ts[1]; double& t3 = ts[2];
+    if (t1 <= t2 && t1 <= t3) {
+        t_exit = t1; t1 += state.dt1;
+        return {state.di1, state.dj1};
+    } else if (t2 <= t1 && t2 <= t3) {
+        t_exit = t2; t2 += state.dt2;
+        return {state.di2, state.dj2};
+    } else {
+        t_exit = t3; t3 += state.dt3;
+        return {state.di3, state.dj3};
+    }
+}
+
+// Return the cell index update values after a single voxel has been traversed
+// Modifies `t_exit`
+std::pair<int, int> dda_step(std::array<double, 3>& ts, const DDAState& dda_state, double& t_exit) {
+    if (auto* rect = std::get_if<RectDDAState>(&dda_state)) {
+        return dda_step_rectangle(ts, *rect, t_exit);
+    } else {
+        return dda_step_hexagon(ts, std::get<HexDDAState>(dda_state), t_exit);
+    }
+}
