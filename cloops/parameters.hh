@@ -18,13 +18,18 @@ struct OpticalProperty {
     double at(double) const;
 };
 
+// Pre-compute group velocity-based refractive index table from phase velocity-based table
+OpticalProperty group_refractive_index(const OpticalProperty& refractive_index);
+
 struct Parameters {
     OpticalProperty emission_spectrum;  // emission spectrum of the scintillator [nm] -> [1]
     OpticalProperty scintillator_scattering_length;  // scattering length of the scintillator [nm] -> [mm]
     OpticalProperty scintillator_absorption_length;  // absorption length of the scintillator [nm] -> [mm]
     OpticalProperty fibre_absorption_length;  // absorption length of the fibres [nm] -> [mm]
     OpticalProperty scintillator_refractive_index;  // refractive index of the scintillator [nm] -> [1]
+    OpticalProperty scintillator_group_refractive_index;  // group velocity refractive index of the scintillator [nm] -> [1]
     OpticalProperty fibre_core_refractive_index;  // refractive index of the fibre core [nm] -> [1]
+    OpticalProperty fibre_core_group_refractive_index;  // group velocity refractive index of the fibre core [nm] -> [1]
     OpticalProperty fibre_inner_cladding_refractive_index;  // refractive index of the fibre inner cladding [nm] -> [1]
     OpticalProperty fibre_outer_cladding_refractive_index;  // refractive index of the fibre inner cladding [nm] -> [1]
     double scint_rise_time;  // scintillation rise time [ns]
@@ -48,7 +53,9 @@ struct Parameters {
         scintillator_absorption_length(scintillator_absorption_length),
         fibre_absorption_length(fibre_absorption_length),
         scintillator_refractive_index(scintillator_refractive_index),
+        scintillator_group_refractive_index(group_refractive_index(scintillator_refractive_index)),
         fibre_core_refractive_index(fibre_core_refractive_index),
+        fibre_core_group_refractive_index(group_refractive_index(fibre_core_refractive_index)),
         fibre_inner_cladding_refractive_index(fibre_inner_cladding_refractive_index),
         fibre_outer_cladding_refractive_index(fibre_outer_cladding_refractive_index),
         scint_rise_time(scintillation_rise_time),

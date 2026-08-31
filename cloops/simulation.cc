@@ -37,7 +37,7 @@ double fresnel_reflectance(double n1, double n2, double costheta1, double costhe
 
 // Interact the photon with the fibre until it exits the fibre
 // Return `true` if photon absorbed (in fibre), `false` if photon still alive and in scintillator
-bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double fr_core, double fr_innerclad, double fr_outerclad, double n_scint, double n_outerclad, double n_innerclad, double n_fibre) {
+bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double fr_core, double fr_innerclad, double fr_outerclad, double n_scint, double n_outerclad, double n_innerclad, double n_fibre, double n_g_fibre) {
     const double EPSILON = 1e-6; // for nudging photon away from fibre edge
 
     // Initialise uniform number generator
@@ -69,7 +69,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     double R_oc_ic = fresnel_reflectance(n_outerclad, n_innerclad, costhetaoc, costhetaic);
     double R_ic_f = fresnel_reflectance(n_innerclad, n_fibre, costhetaic, costhetaf);
     double Reff_s_ic = R_s_oc + (1 - R_s_oc) * (1 - R_s_oc) * (R_oc_ic / (1 - R_s_oc * R_oc_ic));
-    double Reff_s_f = Reff_s_ic + (1 - Reff_s_ic) * (1 - Reff_s_ic) * (R_ic_f / (1 - Reff_s_ic * R_ic_f));    
+    double Reff_s_f = Reff_s_ic + (1 - Reff_s_ic) * (1 - Reff_s_ic) * (R_ic_f / (1 - Reff_s_ic * R_ic_f));
     // Non-TIR reflection back into scintillator or refraction into fibre?
     double u = uniform(rng);
     if (u < Reff_s_f) { // non-TIR reflection back into scintillator
@@ -102,7 +102,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
         photon.r.x += distance_along_chord * photon.p.x;
         photon.r.y += distance_along_chord * photon.p.y;
         photon.r.z += fibre_absorption_distance * photon.p.z;
-        photon.t += n_fibre * C_INV * fibre_absorption_distance;
+        photon.t += n_g_fibre * C_INV * fibre_absorption_distance;
         return true; // return `true` because photon is dead -> exit main simulation
     }
 
@@ -133,7 +133,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     double eta_f_s = n_fibre / n_scint;
     photon.p += (eta_f_s - 1) * photon.p + (costhetas - eta_f_s * costhetaf) * n_in;
     photon.p = photon.p.norm();
-    photon.t += n_fibre * C_INV * fibre_exit_distance;
+    photon.t += n_g_fibre * C_INV * fibre_exit_distance;
     // Teleport photon to fibre edge
     photon.r += deltar * n_in;
     photon.r += photon.p * EPSILON; // nudge photon to avoid immediate re-intersection
@@ -145,7 +145,9 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
     // === INITIALISATION ===
     double scint_absorption_distance = sample_length(params.scintillator_absorption_length.at(photon.wl), rng);  // sample scintillator absorption distance
     double scint_refractive_index = params.scintillator_refractive_index.at(photon.wl);  // look up scintillator refractive index at this wavelength
+    double scint_group_refractive_index = params.scintillator_group_refractive_index.at(photon.wl);  // look up scintillator group velocity refractive index at this wavelength
     double fibre_core_refractive_index = params.fibre_core_refractive_index.at(photon.wl);  // look up fibre core refractive index at this wavelength
+    double fibre_core_group_refractive_index = params.fibre_core_group_refractive_index.at(photon.wl);  // look up fibre core group velocity refractive index at this wavelength
     double fibre_inner_cladding_refractive_index = params.fibre_inner_cladding_refractive_index.at(photon.wl);  // look up fibre inner cladding refractive index at this wavelength
     double fibre_outer_cladding_refractive_index = params.fibre_outer_cladding_refractive_index.at(photon.wl);  // look up fibre outer cladding refractive index at this wavelength
     double mean_scattering_length = params.scintillator_scattering_length.at(photon.wl);  // look up mean scintillator scattering length at this wavelength
@@ -227,8 +229,8 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
 
         // === INTERACTION TYPE ===
         if (fibre_hit) { // if fibre is hit, enter fibre interaction simulation
-            propagate_photon(photon, voxel_traversal_distance, scint_refractive_index);
-            bool absorbed = interact_photon_on_fibre(photon, fibre_centre, fibres.fr_core, fibres.fr_innerclad, fibres.fr_outerclad, scint_refractive_index, fibre_outer_cladding_refractive_index, fibre_inner_cladding_refractive_index, fibre_core_refractive_index);
+            propagate_photon(photon, voxel_traversal_distance, scint_group_refractive_index);
+            bool absorbed = interact_photon_on_fibre(photon, fibre_centre, fibres.fr_core, fibres.fr_innerclad, fibres.fr_outerclad, scint_refractive_index, fibre_outer_cladding_refractive_index, fibre_inner_cladding_refractive_index, fibre_core_refractive_index, fibre_core_group_refractive_index);
             if (absorbed) { // if photon was absorbed in fibre, break out of loop
                 break;
             }
@@ -237,14 +239,14 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             last_ci = ci;
             last_cj = cj;
         } else if (scint_absorption_distance < scattering_distance && scint_absorption_distance < intersection_distance) {  // if absorption happens first, break out of the loop
-            propagate_photon(photon, scint_absorption_distance, scint_refractive_index);
+            propagate_photon(photon, scint_absorption_distance, scint_group_refractive_index);
             break;
         } else if (scattering_distance < scint_absorption_distance && scattering_distance < intersection_distance) {  // if scattering happens first, propagate the photon and resample direction
             scint_absorption_distance -= scattering_distance;
-            propagate_photon(photon, scattering_distance, scint_refractive_index);
+            propagate_photon(photon, scattering_distance, scint_group_refractive_index);
             photon.p = sample_direction(rng);
         } else {  // if intersection happens first, break out of loop
-            propagate_photon(photon, intersection_distance, scint_refractive_index);
+            propagate_photon(photon, intersection_distance, scint_group_refractive_index);
             break;
         }
     }
