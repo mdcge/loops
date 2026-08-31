@@ -107,10 +107,25 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     }
 
     // Refraction out to scintillator
-    // Update position
-    photon.r.x += dc * photon.p.x;
-    photon.r.y += dc * photon.p.y;
+    // CONSIDERING ANGLE
+    double thetaf = std::acos(costhetaf);
+    Vector2D rho = Vector2D(photon.r.x, photon.r.y) - fc;  // radial vector to first entry point
+    double sigma = std::copysign(1.0, rho.x*photon.p.y - rho.y*photon.p.x);  // rotation handedness
+    double Phi = sigma * NR * (M_PI - 2*thetaf);
+    double cosPhi = std::cos(Phi);
+    double sinPhi = std::sin(Phi);
+    // Rotated vector components
+    double rot_rx = cosPhi * rho.x - sinPhi * rho.y;
+    double rot_ry = sinPhi * rho.x + cosPhi * rho.y;
+    double rot_px = cosPhi * photon.p.x - sinPhi * photon.p.y;
+    double rot_py = sinPhi * photon.p.x + cosPhi * photon.p.y;
+    // Update position and direction to exit point
+    photon.r.x = fc.x + rot_rx + dc * rot_px;
+    photon.r.y = fc.y + rot_ry + dc * rot_py;
     photon.r.z += fibre_exit_distance * photon.p.z;
+    photon.p.x = rot_px;
+    photon.p.y = rot_py;
+
     // Normal at exit point of fibre
     Vector2D n2d_in = (Vector2D(photon.r.x, photon.r.y) - fc).norm();  // 2D normal (always pointing outwards from the fibre)
     Vector n_in(n2d_in.x, n2d_in.y, 0.0);
