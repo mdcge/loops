@@ -1,10 +1,9 @@
 #include "geometry.hh"
+#include "vector.hh"
 
 #include <cmath>
 #include <algorithm>
 #include <limits>
-
-#include "vector.hh"
 
 // Calculate distance from point `x` to cylinder along direction `d`
 double Cylinder::intersection_distance(const Vector& x, const Vector& d) const {

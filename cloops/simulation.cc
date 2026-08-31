@@ -167,14 +167,15 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         double t_entry = 0.0;  // distance from photon position at start of ray cast to entry point of current cell
         double voxel_traversal_distance = 0.0;  // how far have we travelled in the grid while searching for fibre intersection
         bool fibre_hit = false;  // have we hit a fibre?
-
         // March through grid of voxels until `max_interaction_distance` is reached, or fibre intersected
         Vector2D fibre_centre;
         bool first_cell_in_step = true; // is this the first cell in this step?
+
+        // Fibre intersection loop
         while (t_entry < max_interaction_distance) {
             // Does this cell contain a fibre?
-            bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;  // is this cell in the `fibre_cells` set: does this cell contain a fibre?
-
+            bool cell_has_fibre = fibres.fibre_cells.count(std::make_pair(ci, cj)) > 0;
+            
             // Skip this fibre check if
             //     - the photon has been reflected/refracted back into scintillator from the fibre -> `photon_fibre_to_scintillator` == true
             //     AND
@@ -185,12 +186,16 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
             if (cell_has_fibre && !skip_this_fibre) {
                 fibre_centre = fibres.fij(fibres.foo, ci, cj);  // fibre position in this cell
                 Vector2D r_entry(X0.x + t_entry * photon_p_2d.x, X0.y + t_entry * photon_p_2d.y);  // position of photon at entrance of current cell
-                double fibre_distance = circle_intersection_distance(r_entry, photon_p_2d, fibre_centre, fibres.fr_outerclad);
+                bool already_inside = (r_entry - fibre_centre).mag() <= fibres.fr_outerclad;  // is photon somehow still on inside of fibre?
 
-                if ((t_entry + fibre_distance) < max_interaction_distance) { // if fibre intersection happens before other processes, set `fibre_hit` flag to true and exit loop
-                    fibre_hit = true;
-                    voxel_traversal_distance = t_entry + fibre_distance;
-                    break;
+                if (!already_inside) {
+                    double fibre_distance = circle_intersection_distance(r_entry, photon_p_2d, fibre_centre, fibres.fr_outerclad);
+
+                    if ((t_entry + fibre_distance) < max_interaction_distance) { // if fibre intersection happens before other processes, set `fibre_hit` flag to true and exit loop
+                        fibre_hit = true;
+                        voxel_traversal_distance = t_entry + fibre_distance;
+                        break;
+                    }
                 }
             }
 
