@@ -176,15 +176,15 @@ The following table shows the performance difference between different simulatio
 
 | Model         | Time per event [s] | Speedup to slowest | Speedup to corresponding |
 | :---          | :---:              | ---:               | ---:                     |
-| GEANT4-nol    | 4.08               | 1.74               | 1.00                     |
-| GEANT4-inf    | 4.34               | 1.63               | 1.00                     |
-| GEANT4        | 4.54               | 1.56               | 1.00                     |
-| GEANT4-fibre  | 1.21               | 5.86               | 1.00                     |
-| GEANT4-afibre | 7.09               | 1.00               | 1.00                     |
-| CLOOPSv1      | 0.09               | 78.78              | 45.33                    |
-| CLOOPSv2      | 0.08               | 88.63              | 54.25                    |
-| CLOOPSv3      | 0.23               | 30.82              | 19.74                    |
-| CLOOPSv4      | 0.01               | 506.43             | 86.43                    |
-| CLOOPSv5      | 0.16               | 44.31              | 44.31                    |
+| GEANT4-nol    | 4.08               | 1.11               | 1.00                     |
+| GEANT4-inf    | 4.34               | 1.05               | 1.00                     |
+| GEANT4        | 4.54               | 1.00               | 1.00                     |
+| GEANT4-fibre  | 1.21               | 3.75               | 1.00                     |
+| GEANT4-afibre | 2.33               | 1.95               | 1.00                     |
+| CLOOPSv1      | 0.09               | 50.44              | 45.33                    |
+| CLOOPSv2      | 0.08               | 56.75              | 54.25                    |
+| CLOOPSv3      | 0.23               | 19.74              | 19.74                    |
+| CLOOPSv4      | 0.01               | 324.29             | 86.43                    |
+| CLOOPSv5      | 0.16               | 28.38              | 14.56                    |
 
 CLOOPSv2 implemented some optimisations relative to CLOOPSv1, which is why it's a little faster even though it simulates more physics.
