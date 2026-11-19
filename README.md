@@ -67,13 +67,13 @@ This involves determining which cell ($i$, $j$) the original photon position ($\
 
 For the rectangular case, the cell which contains the photon position $\vec{r}$ is
 
-$$i=\left\lfloor\frac{r_x - f_{00}_x}{s_x} + \frac{1}{2}\right\rfloor$$
-$$j=\left\lfloor\frac{r_y - f_{00}_y}{s_y} + \frac{1}{2}\right\rfloor$$
+$$i=\left\lfloor\frac{r_x - {f_{00}}_x}{s_x} + \frac{1}{2}\right\rfloor$$
+$$j=\left\lfloor\frac{r_y - {f_{00}}_y}{s_y} + \frac{1}{2}\right\rfloor$$
 
 For the hexagonal case, a cube coordinate rounding technique is used to snap the photon position $\vec{r}$ to cell indices. First the cube coordinates are generated along the $x+y+z=0$ plane:
 
-$$x_c=\frac{r_x - f_{00}_x}{s} - \frac{r_y - f_{00}_y}{s\sqrt{3}}$$
-$$y_c=\frac{2(r_y - f_{00}_y)}{s\sqrt{3}}$$
+$$x_c=\frac{r_x - {f_{00}}_x}{s} - \frac{r_y - {f_{00}}_y}{s\sqrt{3}}$$
+$$y_c=\frac{2(r_y - {f_{00}}_y)}{s\sqrt{3}}$$
 $$z_c=-(x_c + y_c)$$
 
 Then, they are rounded and the round amount calculated:
@@ -161,22 +161,30 @@ For each photon, the following steps are performed:
   5. Anytime a photon is absorbed or intersected, record its location and time.
 
 ## Performance
-The following table shows the performance difference between four simulation models, each simulating 1000 photons from a single point source in identical media:
+The following table shows the performance difference between different simulation models, each simulating 1000 photons from a single point source in identical media:
 
 1. **GEANT4-nol**: GEANT4 simulation without any scintillator emission spectrum or time profile. All photons are emitted at $t=0$ with a wavelength of 450nm.
 2. **GEANT4-inf**: full GEANT4 simulation with scintillator emission spectrum and time profile in infinite scintillator volume.
 3. **GEANT4**: full GEANT4 simulation with scintillator emission spectrum and time profile in detector with walls.
-4. **CLOOPSv1**: LOOPS simulation running on a single CPU core, without scintillator emission or time profile in infinite scintillator volume. All photons are emitted at $t=0$ with a wavelength of 450nm.
-5. **CLOOPSv2**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum and time profile in infinite scintillator volume.
-6. **CLOOPSv3**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum & time profile and intersections with detector walls (either cylindrical or cuboid).
+4. **GEANT4-fibre**: full GEANT4 simulation with scintillator emission spectrum and time profile in detector with walls populated with black fibres (i.e. 100% absorption of photons incident on fibres).
+5. **GEANT4-afibre**: full GEANT4 simulation with scintillator emission spectrum and time profile in detector with walls populated with grey fibres (realistic absorption of photons incident on fibres).
+6. **CLOOPSv1**: LOOPS simulation running on a single CPU core, without scintillator emission or time profile in infinite scintillator volume. All photons are emitted at $t=0$ with a wavelength of 450nm.
+7. **CLOOPSv2**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum and time profile in infinite scintillator volume.
+8. **CLOOPSv3**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum & time profile and intersections with detector walls (either cylindrical or cuboid).
+9. **CLOOPSv4**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum & time profile, intersections with detector walls (either cylindrical or cuboid) and black fibres.
+10. **CLOOPSv5**: LOOPS simulation running on a single CPU core, with scintillator emission spectrum & time profile, intersections with detector walls (either cylindrical or cuboid) and grey fibres.
 
-| Model              | Time per event [s] | Speedup to slowest |
-| :---               | :---:              | ---:               |
-| GEANT4-nol         | 4.08               | 1.11               |
-| GEANT4-inf         | 4.34               | 1.05               |
-| GEANT4             | 4.54               | 1.00               |
-| CLOOPSv1           | 0.09               | 50.44              |
-| CLOOPSv2           | 0.08               | 56.75              |
-| CLOOPSv3           | 0.23               | 19.74              |
+| Model         | Time per event [s] | Speedup to slowest | Speedup to corresponding |
+| :---          | :---:              | ---:               | ---:                     |
+| GEANT4-nol    | 4.08               | 1.74               | 1.00                     |
+| GEANT4-inf    | 4.34               | 1.63               | 1.00                     |
+| GEANT4        | 4.54               | 1.56               | 1.00                     |
+| GEANT4-fibre  | 1.21               | 5.86               | 1.00                     |
+| GEANT4-afibre | 7.09               | 1.00               | 1.00                     |
+| CLOOPSv1      | 0.09               | 78.78              | 45.33                    |
+| CLOOPSv2      | 0.08               | 88.63              | 54.25                    |
+| CLOOPSv3      | 0.23               | 30.82              | 19.74                    |
+| CLOOPSv4      | 0.01               | 506.43             | 86.43                    |
+| CLOOPSv5      | 0.16               | 44.31              | 44.31                    |
 
 CLOOPSv2 implemented some optimisations relative to CLOOPSv1, which is why it's a little faster even though it simulates more physics.
