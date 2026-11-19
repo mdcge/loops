@@ -89,10 +89,16 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     photon.p += (eta_s_f - 1) * photon.p + (eta_s_f * costhetas - costhetaf) * n_out;
     photon.p = photon.p.norm();
     photon.r += photon.p * EPSILON; // nudge photon to avoid immediate re-intersection
-    // Distance to exit based on number of reflections
-    double dc = circle_intersection_distance(Vector2D(photon.r.x, photon.r.y), Vector2D(photon.p.x, photon.p.y), fc, fr_core);  // chord length
-    double NR = std::floor(std::log(uniform01(rng)) / std::log(Reff_s_f)); // number of reflections before exiting
-    double fibre_exit_distance = (NR + 1) * dc;
+    // Calculate 2D-projected geometry of reflections
+    const double sin2alpha = photon.p.x*photon.p.x + photon.p.y*photon.p.y;
+    const double sinalpha = std::sqrt(sin2alpha);
+    const double cos2d = std::min(1.0, costhetaf / sinalpha);   // clamp for round-off
+    const double theta2d = std::acos(cos2d);
+    // Chord length along the 3D path
+    const double dc = 2.0 * fr_core * cos2d / sinalpha;
+    const double NR = std::floor(std::log(1.0 - uniform01(rng)) / std::log(Reff_s_f)); // number of reflections before exiting
+    const double fibre_exit_distance = (NR + 1.0) * dc;
+
     // Distance to absorption in fibre
     double fibre_absorption_length = params.fibre_absorption_length.at(photon.wl);
     double fibre_absorption_distance = sample_length(fibre_absorption_length, rng);
@@ -108,17 +114,21 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
 
     // Refraction out to scintillator
     // CONSIDERING ANGLE
-    double thetaf = std::acos(costhetaf);
-    Vector2D rho = Vector2D(photon.r.x, photon.r.y) - fc;  // radial vector to first entry point
+    Vector2D rho(-fr_core * n_out.x, -fr_core * n_out.y);  // radial vector to first entry point
     double sigma = std::copysign(1.0, rho.x*photon.p.y - rho.y*photon.p.x);  // rotation handedness
-    double Phi = sigma * NR * (M_PI - 2*thetaf);
-    double cosPhi = std::cos(Phi);
-    double sinPhi = std::sin(Phi);
     // Rotated vector components
-    double rot_rx = cosPhi * rho.x - sinPhi * rho.y;
-    double rot_ry = sinPhi * rho.x + cosPhi * rho.y;
-    double rot_px = cosPhi * photon.p.x - sinPhi * photon.p.y;
-    double rot_py = sinPhi * photon.p.x + cosPhi * photon.p.y;
+    double rot_rx = rho.x;
+    double rot_ry = rho.y;
+    double rot_px = photon.p.x;
+    double rot_py = photon.p.y;
+    if (NR > 0.0) { // only perform trigonometry if reflections occur
+        const double Phi = sigma * NR * (M_PI - 2.0 * theta2d);
+        const double cosPhi = std::cos(Phi), sinPhi = std::sin(Phi);
+        rot_rx = cosPhi * rho.x - sinPhi * rho.y;
+        rot_ry = sinPhi * rho.x + cosPhi * rho.y;
+        rot_px = cosPhi * photon.p.x - sinPhi * photon.p.y;
+        rot_py = sinPhi * photon.p.x + cosPhi * photon.p.y;
+    }
     // Update position and direction to exit point
     photon.r.x = fc.x + rot_rx + dc * rot_px;
     photon.r.y = fc.y + rot_ry + dc * rot_py;
