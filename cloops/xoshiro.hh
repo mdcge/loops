@@ -52,4 +52,9 @@ struct xoshiro256pp {
     static constexpr result_type max() { return std::numeric_limits<std::uint64_t>::max(); }
 };
 
+// Fast [0, 1) random number sampling
+inline double uniform01(xoshiro256pp& rng) {
+    return (rng() >> 11) * (1.0 / 9007199254740992.0); // 2^-53
+}
+
 #endif // XOSHIRO_H_

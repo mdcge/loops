@@ -47,18 +47,18 @@ OpticalProperty group_refractive_index(const OpticalProperty& n) {
 // === General ===
 
 double sample_length(double lambda, xoshiro256pp& rng)  {
-    std::uniform_real_distribution<double> uniform(0.0, 1.0);
-    double u = uniform(rng);
+    // std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    double u = uniform01(rng);
     return -lambda * std::log(u);
 }
 
 // Sample direction isotropically
 Vector sample_direction(xoshiro256pp& rng) {
-    std::uniform_real_distribution<double> uniform(-1.0, 1.0);
+    // std::uniform_real_distribution<double> uniform(-1.0, 1.0);
     double x1, x2, s;
     do {
-        x1 = uniform(rng);
-        x2 = uniform(rng);
+        x1 = 2.0*uniform01(rng) - 1.0;
+        x2 = 2.0*uniform01(rng) - 1.0;
         s = x1*x1 + x2*x2;
     } while (s >= 1.0);   // rejection: keep points inside the unit disk (~78.5% acceptance)
 

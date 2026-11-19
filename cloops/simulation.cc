@@ -41,7 +41,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     const double EPSILON = 1e-6; // for nudging photon away from fibre edge
 
     // Initialise uniform number generator
-    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    // std::uniform_real_distribution<double> uniform(0.0, 1.0);
 
     // === OUTSIDE FIBRE ===
     
@@ -71,7 +71,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     double Reff_s_ic = R_s_oc + (1 - R_s_oc) * (1 - R_s_oc) * (R_oc_ic / (1 - R_s_oc * R_oc_ic));
     double Reff_s_f = Reff_s_ic + (1 - Reff_s_ic) * (1 - Reff_s_ic) * (R_ic_f / (1 - Reff_s_ic * R_ic_f));
     // Non-TIR reflection back into scintillator or refraction into fibre?
-    double u = uniform(rng);
+    double u = uniform01(rng);
     if (u < Reff_s_f) { // non-TIR reflection back into scintillator
         photon.p += 2 * costhetas * n_out;
         photon.p = photon.p.norm();
@@ -91,7 +91,7 @@ bool Simulation::interact_photon_on_fibre(Photon& photon, Vector2D& fc, double f
     photon.r += photon.p * EPSILON; // nudge photon to avoid immediate re-intersection
     // Distance to exit based on number of reflections
     double dc = circle_intersection_distance(Vector2D(photon.r.x, photon.r.y), Vector2D(photon.p.x, photon.p.y), fc, fr_core);  // chord length
-    double NR = std::floor(std::log(uniform(rng)) / std::log(Reff_s_f)); // number of reflections before exiting
+    double NR = std::floor(std::log(uniform01(rng)) / std::log(Reff_s_f)); // number of reflections before exiting
     double fibre_exit_distance = (NR + 1) * dc;
     // Distance to absorption in fibre
     double fibre_absorption_length = params.fibre_absorption_length.at(photon.wl);
