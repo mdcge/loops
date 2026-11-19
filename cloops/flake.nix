@@ -61,6 +61,7 @@
                       packages = [
                         (python-with-all-my-packages pkgs.${ pythonVersion })
                         pkgs.gcc
+                        pkgs.clang-tools # for C++ LSP
                         pkgs.just
                         pkgs.cowsay
                       ];
