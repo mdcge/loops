@@ -230,6 +230,7 @@ void Simulation::track_photon(Photon& photon, int max_steps) {
         // === INTERACTION TYPE ===
         if (fibre_hit) { // if fibre is hit, enter fibre interaction simulation
             propagate_photon(photon, voxel_traversal_distance, scint_group_refractive_index);
+            scint_absorption_distance -= voxel_traversal_distance;
             bool absorbed = interact_photon_on_fibre(photon, fibre_centre, fibres.fr_core, fibres.fr_innerclad, fibres.fr_outerclad, scint_refractive_index, fibre_outer_cladding_refractive_index, fibre_inner_cladding_refractive_index, fibre_core_refractive_index, fibre_core_group_refractive_index);
             if (absorbed) { // if photon was absorbed in fibre, break out of loop
                 break;
